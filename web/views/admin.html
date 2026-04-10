@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin – Smart Cart</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <span>🔧</span>
+    <span class="logo">Smart Cart</span>
+    <span class="role-badge">Admin Dashboard</span>
+  </nav>
+
+  <div class="container">
+    <div id="alert" class="alert hidden"></div>
+
+    <!-- Tab Nav -->
+    <div style="display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;">
+      <button class="btn btn-primary tab-btn" onclick="showTab('products')">📦 Products</button>
+      <button class="btn btn-outline tab-btn" onclick="showTab('bills')">🧾 Bills</button>
+      <button class="btn btn-outline tab-btn" onclick="showTab('users')">👥 Users</button>
+    </div>
+
+    <!-- Products Tab -->
+    <div id="tab-products">
+      <div class="grid-2">
+        <!-- Add Product -->
+        <div class="card">
+          <div class="card-title">➕ Add Product</div>
+          <div class="form-group"><label>Product Name</label>
+            <input id="p-name" class="form-control" placeholder="Coca Cola 500ml"></div>
+          <div class="form-group"><label>Barcode</label>
+            <input id="p-barcode" class="form-control" placeholder="5000112637922"></div>
+          <div class="form-group"><label>Price ($)</label>
+            <input id="p-price" class="form-control" type="number" step="0.01" placeholder="1.50"></div>
+          <div class="form-group"><label>Stock</label>
+            <input id="p-stock" class="form-control" type="number" placeholder="100"></div>
+          <div class="form-group"><label>Category</label>
+            <input id="p-cat" class="form-control" placeholder="Beverages"></div>
+          <button class="btn btn-success btn-block" onclick="addProduct()">➕ Add Product</button>
+        </div>
+
+        <!-- Product Stats -->
+        <div>
+          <div class="card" style="margin-bottom:16px;">
+            <div class="card-title">📊 Overview</div>
+            <div id="stats-grid" class="grid-3"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Products Table -->
+      <div class="card" style="margin-top:16px;">
+        <div class="card-title" style="justify-content:space-between;">
+          <span>📦 All Products</span>
+          <button class="btn btn-outline btn-sm" onclick="loadProducts()">↻ Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Barcode</th><th>Price</th><th>Stock</th><th>Category</th><th>Actions</th></tr></thead>
+            <tbody id="products-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bills Tab -->
+    <div id="tab-bills" class="hidden">
+      <div class="card">
+        <div class="card-title" style="justify-content:space-between;">
+          <span>🧾 Transaction History</span>
+          <button class="btn btn-outline btn-sm" onclick="loadBills()">↻ Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Bill No.</th><th>Cart</th><th>Total</th><th>Payment</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody id="bills-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Users Tab -->
+    <div id="tab-users" class="hidden">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">➕ Add User</div>
+          <div class="form-group"><label>Name</label><input id="u-name" class="form-control" placeholder="John Doe"></div>
+          <div class="form-group"><label>Email</label><input id="u-email" class="form-control" type="email" placeholder="john@store.com"></div>
+          <div class="form-group"><label>Password</label><input id="u-pass" class="form-control" type="password" placeholder="••••••••"></div>
+          <div class="form-group"><label>Role</label>
+            <select id="u-role" class="form-control">
+              <option value="cashier">Cashier</option>
+              <option value="product_adder">Product Adder</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <button class="btn btn-success btn-block" onclick="addUser()">➕ Add User</button>
+        </div>
+        <div class="card">
+          <div class="card-title" style="justify-content:space-between;">
+            <span>👥 All Users</span>
+            <button class="btn btn-outline btn-sm" onclick="loadUsers()">↻ Refresh</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Action</th></tr></thead>
+              <tbody id="users-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script>
+    // ── Tabs ──────────────────────────────────────
+    function showTab(tab) {
+      ['products', 'bills', 'users'].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== tab);
+      });
+      document.querySelectorAll('.tab-btn').forEach((b, i) => {
+        const tabs = ['products', 'bills', 'users'];
+        b.className = `btn tab-btn ${tabs[i] === tab ? 'btn-primary' : 'btn-outline'}`;
+      });
+      if (tab === 'products') loadProducts();
+      if (tab === 'bills') loadBills();
+      if (tab === 'users') loadUsers();
+    }
+
+    // ── Products ──────────────────────────────────
+    async function loadProducts() {
+      const res = await api.get('/products');
+      if (!res.success) return;
+      const products = res.data;
+
+      // Stats
+      const lowStock = products.filter(p => p.stock < 10).length;
+      document.getElementById('stats-grid').innerHTML = `
+        <div class="stat-card"><div class="stat-num">${products.length}</div><div class="stat-label">Products</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--warning)">${lowStock}</div><div class="stat-label">Low Stock</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:var(--success)">${products.filter(p => p.stock > 0).length}</div><div class="stat-label">In Stock</div></div>
+      `;
+
+      document.getElementById('products-body').innerHTML = products.map(p => `
+        <tr>
+          <td><strong>${p.name}</strong></td>
+          <td><code style="font-size:0.8rem">${p.barcode}</code></td>
+          <td>${formatCurrency(p.price)}</td>
+          <td>
+            <span class="badge ${p.stock < 10 ? 'badge-warning' : 'badge-success'}">${p.stock}</span>
+          </td>
+          <td>${p.category || '—'}</td>
+          <td>
+            <button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})">🗑️ Delete</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function addProduct() {
+      const body = {
+        name: document.getElementById('p-name').value,
+        barcode: document.getElementById('p-barcode').value,
+        price: parseFloat(document.getElementById('p-price').value),
+        stock: parseInt(document.getElementById('p-stock').value) || 0,
+        category: document.getElementById('p-cat').value,
+      };
+      const res = await api.post('/products', body);
+      showAlert(document.getElementById('alert'), res.message, res.success ? 'success' : 'danger');
+      if (res.success) {
+        ['p-name','p-barcode','p-price','p-stock','p-cat'].forEach(id => document.getElementById(id).value = '');
+        loadProducts();
+      }
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('Delete this product?')) return;
+      const res = await api.del(`/products/${id}`);
+      showAlert(document.getElementById('alert'), res.message, res.success ? 'success' : 'danger');
+      if (res.success) loadProducts();
+    }
+
+    // ── Bills ─────────────────────────────────────
+    async function loadBills() {
+      const res = await api.get('/checkout/bills');
+      if (!res.success) return;
+      const bills = res.data;
+      if (!bills.length) {
+        document.getElementById('bills-body').innerHTML =
+          `<tr><td colspan="6" style="text-align:center;color:var(--muted);">No bills yet</td></tr>`;
+        return;
+      }
+      document.getElementById('bills-body').innerHTML = bills.map(b => `
+        <tr>
+          <td><strong>${b.bill_number}</strong></td>
+          <td>Cart #${b.cart_id}</td>
+          <td style="font-weight:700;">${formatCurrency(b.total_amount)}</td>
+          <td><span class="badge badge-info">${b.payment_method}</span></td>
+          <td>${formatDate(b.created_at)}</td>
+          <td><span class="badge badge-success">${b.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    // ── Users ─────────────────────────────────────
+    async function loadUsers() {
+      const res = await api.get('/users');
+      if (!res.success) return;
+      document.getElementById('users-body').innerHTML = res.data.map(u => `
+        <tr>
+          <td><strong>${u.name}</strong></td>
+          <td>${u.email}</td>
+          <td><span class="badge badge-info">${u.role}</span></td>
+          <td><button class="btn btn-danger btn-sm" onclick="deleteUser(${u.id})">🗑️</button></td>
+        </tr>
+      `).join('');
+    }
+
+    async function addUser() {
+      const body = {
+        name: document.getElementById('u-name').value,
+        email: document.getElementById('u-email').value,
+        password: document.getElementById('u-pass').value,
+        role: document.getElementById('u-role').value,
+      };
+      const res = await api.post('/users', body);
+      showAlert(document.getElementById('alert'), res.message, res.success ? 'success' : 'danger');
+      if (res.success) loadUsers();
+    }
+
+    async function deleteUser(id) {
+      if (!confirm('Delete this user?')) return;
+      const res = await api.del(`/users/${id}`);
+      showAlert(document.getElementById('alert'), res.message, res.success ? 'success' : 'danger');
+      if (res.success) loadUsers();
+    }
+
+    // Init
+    loadProducts();
+  </script>
+</body>
+</html>

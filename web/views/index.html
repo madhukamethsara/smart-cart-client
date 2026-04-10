@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Cart System</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); }
+    .landing { text-align: center; color: white; }
+    .landing h1 { font-size: 2.8rem; font-weight: 800; margin-bottom: 8px; }
+    .landing p { font-size: 1.1rem; opacity: 0.85; margin-bottom: 40px; }
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 700px; }
+    .role-card {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      backdrop-filter: blur(10px);
+      border-radius: 14px;
+      padding: 30px 20px;
+      text-decoration: none;
+      color: white;
+      transition: all 0.25s;
+    }
+    .role-card:hover { background: rgba(255,255,255,0.25); transform: translateY(-4px); }
+    .role-card .icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .role-card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; }
+    .role-card p { font-size: 0.85rem; opacity: 0.8; }
+    @media (max-width: 600px) { .cards { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="landing">
+    <div style="font-size:3.5rem; margin-bottom:12px;">🛒</div>
+    <h1>Smart Cart System</h1>
+    <p>IoT-powered supermarket POS with real-time cart tracking</p>
+    <div class="cards">
+      <a href="/customer" class="role-card">
+        <div class="icon">🧑‍🛒</div>
+        <h3>Customer</h3>
+        <p>View your cart and scanned items</p>
+      </a>
+      <a href="/cashier" class="role-card">
+        <div class="icon">💳</div>
+        <h3>Cashier</h3>
+        <p>Process payments and checkout</p>
+      </a>
+      <a href="/admin" class="role-card">
+        <div class="icon">🔧</div>
+        <h3>Admin</h3>
+        <p>Manage products and reports</p>
+      </a>
+    </div>
+    <p style="margin-top: 40px; font-size: 0.8rem; opacity: 0.6;">API running at <code>/api/health</code></p>
+  </div>
+</body>
+</html>
