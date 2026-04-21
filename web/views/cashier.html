@@ -4,18 +4,26 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Cashier – NovaMart</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f3f4f6;
-      --surface: #ffffff;
-      --surface-2: #f9fafb;
-      --border: #e5e7eb;
-      --text: #111827;
-      --muted: #6b7280;
-      --success: #16a34a;
-      --success-dark: #15803d;
-      --danger: #dc2626;
-      --shadow: 0 8px 24px rgba(17, 24, 39, 0.06);
+      --bg: #ffffff;
+      --bg-2: #f9f9f9;
+      --bg-3: #f2f2f2;
+      --border: #e8e8e8;
+      --border-dark: #d0d0d0;
+      --ink: #0a0a0a;
+      --ink-2: #1a1a1a;
+      --ink-3: #555555;
+      --ink-4: #999999;
+      --white: #ffffff;
+      --green: #1a6b36;
+      --green-bg: #f0f7f3;
+      --amber-bg: #fdf8ee;
+      --red-bg: #fff0f0;
+      --blue-bg: #eef3ff;
     }
 
     * {
@@ -25,15 +33,17 @@
     }
 
     body {
-      font-family: "Segoe UI", Arial, sans-serif;
+      font-family: 'Syne', sans-serif;
       background: var(--bg);
-      color: var(--text);
+      color: var(--ink);
+      min-height: 100vh;
+      line-height: 1.6;
     }
 
     .topbar {
-      height: 68px;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
+      height: 60px;
+      background: var(--white);
+      border-bottom: 1.5px solid var(--ink);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -44,47 +54,119 @@
       display: flex;
       align-items: center;
       gap: 14px;
+      text-decoration: none;
+      color: inherit;
     }
 
     .brand-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      background: #111827;
-      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 2px;
+      background: var(--ink);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1rem;
-      font-weight: 700;
+    }
+
+    .brand-icon svg {
+      width: 17px;
+      height: 17px;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     .brand-text h1 {
-      font-size: 1rem;
-      font-weight: 700;
-      line-height: 1.2;
+      font-size: 0.82rem;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
     }
 
     .brand-text p {
-      font-size: 0.82rem;
-      color: var(--muted);
-      margin-top: 2px;
+      font-size: 0.68rem;
+      color: var(--ink-4);
+      margin-top: 3px;
+      letter-spacing: 0.03em;
     }
 
     .role-pill {
-      padding: 8px 14px;
-      border-radius: 999px;
-      font-size: 0.82rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 12px;
+      border-radius: 2px;
+      font-size: 0.72rem;
       font-weight: 600;
-      color: var(--success-dark);
-      background: rgba(22, 163, 74, 0.1);
-      border: 1px solid rgba(22, 163, 74, 0.18);
+      color: var(--green);
+      background: var(--green-bg);
+      border: 1.5px solid var(--green);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .ticker {
+      background: var(--ink);
+      color: var(--white);
+      overflow: hidden;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid #222;
+    }
+
+    .ticker-track {
+      display: flex;
+      animation: ticker 24s linear infinite;
+      white-space: nowrap;
+    }
+
+    .ticker-item {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      padding: 0 28px;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .ticker-item::after {
+      content: '—';
+      color: rgba(255,255,255,0.25);
+      margin-left: 28px;
+    }
+
+    .ticker-item.hl {
+      color: #ffffff;
     }
 
     .page {
       max-width: 1440px;
       margin: 0 auto;
-      padding: 24px;
+      padding: 30px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 44px 44px;
+      opacity: 0.45;
+      pointer-events: none;
     }
 
     .page-header {
@@ -93,19 +175,28 @@
       justify-content: space-between;
       gap: 16px;
       margin-bottom: 24px;
+      position: relative;
+      z-index: 1;
+      background: var(--white);
+      border: 1.5px solid var(--ink);
+      box-shadow: 6px 6px 0 var(--ink);
+      padding: 20px;
     }
 
     .page-header h2 {
-      font-size: 2rem;
-      font-weight: 700;
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      font-weight: 400;
       margin-bottom: 8px;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.03em;
+      line-height: 1;
     }
 
     .page-header p {
       max-width: 760px;
-      color: var(--muted);
-      line-height: 1.6;
+      color: var(--ink-3);
+      line-height: 1.8;
+      font-size: 0.9rem;
     }
 
     .header-stats {
@@ -116,35 +207,41 @@
 
     .mini-stat {
       min-width: 170px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
+      background: var(--bg-2);
+      border: 1.5px solid var(--border-dark);
+      border-radius: 2px;
       padding: 14px 16px;
-      box-shadow: var(--shadow);
     }
 
     .mini-stat span {
       display: block;
-      font-size: 0.78rem;
-      color: var(--muted);
+      font-size: 0.68rem;
+      color: var(--ink-4);
       margin-bottom: 6px;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.12em;
+      font-family: 'IBM Plex Mono', monospace;
     }
 
     .mini-stat strong {
-      font-size: 1rem;
-      font-weight: 700;
+      font-size: 1.05rem;
+      font-weight: 600;
     }
 
     .alert {
       display: none;
       margin-bottom: 16px;
-      padding: 14px 16px;
-      border-radius: 10px;
-      font-size: 0.92rem;
+      padding: 12px 14px;
+      border-radius: 2px;
+      font-size: 0.78rem;
       font-weight: 600;
-      border: 1px solid transparent;
+      border: 1.5px solid transparent;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-family: 'IBM Plex Mono', monospace;
+      position: relative;
+      z-index: 1;
+      background: var(--white);
     }
 
     .alert.show {
@@ -152,27 +249,27 @@
     }
 
     .alert-success {
-      background: rgba(22, 163, 74, 0.1);
-      color: var(--success-dark);
-      border-color: rgba(22, 163, 74, 0.18);
+      background: var(--green-bg);
+      color: var(--green);
+      border-color: #a7dfb9;
     }
 
     .alert-danger {
-      background: rgba(220, 38, 38, 0.08);
-      color: var(--danger);
-      border-color: rgba(220, 38, 38, 0.14);
+      background: var(--red-bg);
+      color: #8a2020;
+      border-color: #efb9b9;
     }
 
     .alert-warning {
-      background: rgba(245, 158, 11, 0.12);
+      background: var(--amber-bg);
       color: #b45309;
-      border-color: rgba(245, 158, 11, 0.16);
+      border-color: #efd8ac;
     }
 
     .alert-info {
-      background: rgba(37, 99, 235, 0.08);
-      color: #1d4ed8;
-      border-color: rgba(37, 99, 235, 0.14);
+      background: var(--blue-bg);
+      color: #1e40af;
+      border-color: #c8d8ff;
     }
 
     .layout {
@@ -188,30 +285,38 @@
     }
 
     .panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      box-shadow: var(--shadow);
+      background: var(--white);
+      border: 1.5px solid var(--ink);
+      border-radius: 0;
+      box-shadow: 6px 6px 0 var(--ink);
+      position: relative;
+      z-index: 1;
     }
 
     .panel-header {
       padding: 18px 20px 14px;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1.5px solid var(--ink);
+      background: var(--ink);
     }
 
     .panel-header h3 {
-      font-size: 1.08rem;
+      font-size: 0.76rem;
       font-weight: 700;
       margin-bottom: 4px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--white);
     }
 
     .panel-header p {
-      font-size: 0.88rem;
-      color: var(--muted);
+      font-size: 0.68rem;
+      color: rgba(255,255,255,0.55);
+      font-family: 'IBM Plex Mono', monospace;
     }
 
     .panel-body {
       padding: 20px;
+      background: var(--white);
     }
 
     .scan-row {
@@ -223,18 +328,19 @@
     .form-control {
       width: 100%;
       height: 46px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
+      border: 1.5px solid var(--border-dark);
+      border-radius: 2px;
       padding: 0 14px;
       background: #fff;
-      color: var(--text);
+      color: var(--ink);
       font-size: 0.95rem;
       outline: none;
+      font-family: 'Syne', sans-serif;
     }
 
     .form-control:focus {
-      border-color: #9ca3af;
-      box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.05);
+      border-color: var(--ink);
+      box-shadow: 3px 3px 0 var(--border);
     }
 
     .form-group {
@@ -243,42 +349,53 @@
 
     .form-group label {
       display: block;
-      font-size: 0.87rem;
-      font-weight: 600;
+      font-size: 0.7rem;
+      font-weight: 700;
       margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--ink-4);
+      font-family: 'IBM Plex Mono', monospace;
     }
 
     .btn {
-      border: none;
-      border-radius: 10px;
+      border: 1.5px solid transparent;
+      border-radius: 2px;
       padding: 0 18px;
       height: 46px;
-      font-size: 0.93rem;
+      font-size: 0.74rem;
       font-weight: 700;
       cursor: pointer;
-      transition: 0.18s ease;
+      transition: all 0.15s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      font-family: 'Syne', sans-serif;
     }
 
     .btn:hover {
-      transform: translateY(-1px);
+      transform: translate(-2px, -2px);
     }
 
     .btn-dark {
-      background: #111827;
-      color: white;
+      background: var(--ink);
+      color: var(--white);
+      border-color: var(--ink);
     }
 
     .btn-dark:hover {
-      background: #0f172a;
+      background: #222;
+      box-shadow: 4px 4px 0 var(--border-dark);
     }
 
     .btn-success {
-      background: var(--success);
-      color: white;
+      background: var(--white);
+      color: var(--ink);
+      border-color: var(--border-dark);
     }
 
     .btn-success:hover {
-      background: var(--success-dark);
+      border-color: var(--ink);
+      box-shadow: 4px 4px 0 var(--border);
     }
 
     .btn-block {
@@ -288,18 +405,21 @@
     .empty-state {
       text-align: center;
       padding: 48px 20px;
-      color: var(--muted);
+      color: var(--ink-4);
+      background: var(--bg-2);
+      border: 1.5px dashed var(--border-dark);
+      border-radius: 2px;
     }
 
     .empty-state .icon {
-      font-size: 2rem;
+      font-size: 1.8rem;
       margin-bottom: 10px;
     }
 
     .table-wrap {
       overflow-x: auto;
-      border: 1px solid var(--border);
-      border-radius: 12px;
+      border: 1.5px solid var(--ink);
+      border-radius: 0;
     }
 
     table {
@@ -309,7 +429,7 @@
     }
 
     thead {
-      background: var(--surface-2);
+      background: var(--bg-3);
     }
 
     th, td {
@@ -320,11 +440,12 @@
     }
 
     th {
-      font-size: 0.82rem;
-      letter-spacing: 0.03em;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--muted);
+      color: var(--ink-4);
       font-weight: 700;
+      font-family: 'IBM Plex Mono', monospace;
     }
 
     tbody tr:last-child td {
@@ -336,8 +457,8 @@
     }
 
     .item-sub {
-      font-size: 0.8rem;
-      color: var(--muted);
+      font-size: 0.74rem;
+      color: var(--ink-4);
       margin-top: 3px;
     }
 
@@ -348,22 +469,24 @@
       min-width: 34px;
       height: 28px;
       padding: 0 10px;
-      border-radius: 999px;
-      background: #eef2ff;
-      color: #3730a3;
+      border-radius: 2px;
+      background: var(--bg-2);
+      color: var(--ink-3);
       font-weight: 700;
       font-size: 0.82rem;
+      border: 1px solid var(--border-dark);
     }
 
     .total-box {
       margin-top: 16px;
-      background: #111827;
-      color: white;
-      border-radius: 12px;
+      background: var(--ink);
+      color: var(--white);
+      border-radius: 0;
       padding: 16px 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      border: 1.5px solid var(--ink);
     }
 
     .total-box span {
@@ -377,9 +500,9 @@
     }
 
     .summary-box {
-      border: 1px solid var(--border);
-      background: var(--surface-2);
-      border-radius: 12px;
+      border: 1.5px solid var(--border-dark);
+      background: var(--bg-2);
+      border-radius: 2px;
       padding: 16px;
       margin: 14px 0 18px;
     }
@@ -399,16 +522,16 @@
     }
 
     .summary-row .muted {
-      color: var(--muted);
+      color: var(--ink-4);
       font-weight: 500;
     }
 
     .receipt-box {
-      border: 1px solid var(--border);
+      border: 1.5px solid var(--border-dark);
       background: #fcfcfc;
-      border-radius: 12px;
+      border-radius: 2px;
       padding: 18px;
-      font-family: Consolas, monospace;
+      font-family: 'IBM Plex Mono', monospace;
       font-size: 0.9rem;
     }
 
@@ -424,13 +547,13 @@
     }
 
     .receipt-head span {
-      color: var(--muted);
+      color: var(--ink-4);
       font-size: 0.8rem;
     }
 
     .receipt-box hr {
       border: none;
-      border-top: 1px dashed #d1d5db;
+      border-top: 1px dashed var(--border-dark);
       margin: 12px 0;
     }
 
@@ -459,6 +582,11 @@
       display: none !important;
     }
 
+    @keyframes ticker {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
     @media (max-width: 1100px) {
       .layout {
         grid-template-columns: 1fr;
@@ -476,6 +604,11 @@
         flex-direction: column;
         align-items: flex-start;
         gap: 12px;
+      }
+
+      .brand-text p,
+      .role-pill {
+        display: none;
       }
 
       .page-header {
@@ -498,15 +631,33 @@
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">
-      <div class="brand-icon">💳</div>
+    <a class="brand" href="index.html">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24">
+          <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+      </div>
       <div class="brand-text">
         <h1>NovaMart Smart Cart</h1>
         <p>Cashier Checkout Interface</p>
       </div>
-    </div>
-    <div class="role-pill">Cashier Console</div>
+    </a>
+    <div class="role-pill"><span class="status-dot"></span>Cashier Console</div>
   </header>
+
+  <div class="ticker">
+    <div class="ticker-track">
+      <span class="ticker-item hl">CASHIER TERMINAL: ACTIVE</span>
+      <span class="ticker-item">RFID LOOKUP: READY</span>
+      <span class="ticker-item hl">PRODUCT FLOW: LIVE</span>
+      <span class="ticker-item">CHECKOUT QUEUE: STANDBY</span>
+      <span class="ticker-item hl">CASHIER TERMINAL: ACTIVE</span>
+      <span class="ticker-item">RFID LOOKUP: READY</span>
+      <span class="ticker-item hl">PRODUCT FLOW: LIVE</span>
+      <span class="ticker-item">CHECKOUT QUEUE: STANDBY</span>
+    </div>
+  </div>
 
   <main class="page">
     <section class="page-header">
@@ -553,7 +704,7 @@
           </div>
           <div class="panel-body">
             <div id="cart-empty" class="empty-state">
-              <div class="icon">🛒</div>
+              <div class="icon">00</div>
               <p>Scan an RFID cart code to load cart details.</p>
             </div>
 
@@ -589,7 +740,7 @@
           </div>
           <div class="panel-body">
             <div id="payment-idle" class="empty-state">
-              <div class="icon">💳</div>
+              <div class="icon">01</div>
               <p>Load a cart first to continue with payment.</p>
             </div>
 
