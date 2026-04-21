@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login — NovaMart</title>
+  <link rel="stylesheet" href="../public/css/style.css">
+  <style>
+    body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'DM Sans', sans-serif; display:flex; align-items:center; justify-content:center; min-height:100vh; background:#f7f6f2; }
+    .card { background:#fff; padding:28px; border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.06); width:360px }
+    h2 { margin-bottom:12px }
+    label { display:block; font-size:0.85rem; color:#444; margin-top:8px }
+    input { width:100%; padding:10px 12px; margin-top:6px; border-radius:8px; border:1px solid #e4e1dc }
+    .actions { margin-top:18px; display:flex; gap:10px }
+    .alert { display:none; padding:10px; border-radius:8px; margin-top:12px }
+    .alert.error { background:#fdecea; color:#7a1f18 }
+    .alert.success { background:#e6f8ee; color:#0b5e2f }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Staff Login</h2>
+    <form id="login-form">
+      <label for="username">Username</label>
+      <input id="username" name="username" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <div class="actions">
+        <button type="submit" class="btn btn-primary">Sign In</button>
+        <a href="register.html" class="btn btn-outline" style="align-self:center">Create account</a>
+      </div>
+    </form>
+    <div id="login-alert" class="alert"></div>
+  </div>
+
+  <script src="../public/js/api.js"></script>
+  <script>
+    const form = document.getElementById('login-form');
+    const alertEl = document.getElementById('login-alert');
+    function show(msg, ok){ alertEl.style.display='block'; alertEl.className = 'alert ' + (ok? 'success':'error'); alertEl.textContent = msg }
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const username = form.username.value.trim();
+      const password = form.password.value;
+      const res = await window.auth.loginUser({ username, password });
+      if (!res || !res.ok) return show(res?.error || 'Login failed', false);
+      show('Login successful — redirecting...', true);
+      setTimeout(() => { window.location.href = 'index.html'; }, 700);
+    });
+  </script>
+</body>
+</html>

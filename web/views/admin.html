@@ -1,246 +1,561 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin – Smart Cart</title>
-  <link rel="stylesheet" href="/css/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin – NovaMart</title>
+
+<style>
+:root {
+  --bg:#f3f4f6;
+  --surface:#ffffff;
+  --border:#e5e7eb;
+  --text:#111827;
+  --muted:#6b7280;
+
+  --primary:#111827;
+  --success:#16a34a;
+  --danger:#dc2626;
+}
+
+* {margin:0;padding:0;box-sizing:border-box;}
+
+body {
+  font-family:Segoe UI;
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* TOP BAR */
+.topbar {
+  height:64px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 24px;
+}
+
+.brand {
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.brand-box {
+  width:38px;height:38px;
+  background:black;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:8px;
+}
+
+.role {
+  font-size:0.85rem;
+  padding:6px 12px;
+  border-radius:20px;
+  background:#ecfdf5;
+  color:var(--success);
+  font-weight:600;
+}
+
+/* PAGE */
+.page {
+  padding:24px;
+  max-width:1400px;
+  margin:auto;
+}
+
+/* HEADER */
+.page-header {
+  margin-bottom:20px;
+}
+
+.page-header h1 {
+  font-size:1.8rem;
+  margin-bottom:6px;
+}
+
+.page-header p {
+  color:var(--muted);
+}
+
+/* TABS */
+.tabs {
+  display:flex;
+  gap:10px;
+  margin-bottom:20px;
+}
+
+.tab {
+  padding:10px 16px;
+  border-radius:10px;
+  cursor:pointer;
+  border:1px solid var(--border);
+  background:white;
+  font-weight:600;
+}
+
+.tab.active {
+  background:black;
+  color:white;
+}
+
+/* GRID */
+.grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+
+/* CARD */
+.card {
+  background:white;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:18px;
+}
+
+.card-title {
+  font-weight:700;
+  margin-bottom:14px;
+}
+
+/* FORM */
+.form-group {
+  margin-bottom:12px;
+}
+
+input, select {
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid var(--border);
+}
+
+/* BUTTONS */
+.btn {
+  padding:10px;
+  border-radius:8px;
+  border:none;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.btn-dark {background:black;color:white;}
+.btn-success {background:var(--success);color:white;}
+.btn-danger {background:var(--danger);color:white;}
+.btn-outline {border:1px solid var(--border);background:white;}
+
+.btn-block {width:100%;}
+
+/* TABLE */
+table {
+  width:100%;
+  border-collapse:collapse;
+}
+
+th, td {
+  padding:10px;
+  border-bottom:1px solid var(--border);
+  text-align:left;
+}
+
+th {
+  font-size:0.8rem;
+  color:var(--muted);
+}
+
+/* BADGES */
+.badge {
+  padding:4px 10px;
+  border-radius:20px;
+  font-size:0.75rem;
+}
+
+.badge-success {background:#ecfdf5;color:var(--success);}
+.badge-warning {background:#fff7ed;color:#d97706;}
+.badge-info {background:#eff6ff;color:#2563eb;}
+
+/* HIDDEN */
+.hidden {display:none;}
+</style>
 </head>
+
 <body>
-  <nav class="navbar">
-    <span>🔧</span>
-    <span class="logo">Smart Cart</span>
-    <span class="role-badge">Admin Dashboard</span>
-  </nav>
 
-  <div class="container">
-    <div id="alert" class="alert hidden"></div>
-
-    <!-- Tab Nav -->
-    <div style="display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;">
-      <button class="btn btn-primary tab-btn" onclick="showTab('products')">📦 Products</button>
-      <button class="btn btn-outline tab-btn" onclick="showTab('bills')">🧾 Bills</button>
-      <button class="btn btn-outline tab-btn" onclick="showTab('users')">👥 Users</button>
-    </div>
-
-    <!-- Products Tab -->
-    <div id="tab-products">
-      <div class="grid-2">
-        <!-- Add Product -->
-        <div class="card">
-          <div class="card-title">➕ Add Product</div>
-          <div class="form-group"><label>Product Name</label>
-            <input id="p-name" class="form-control" placeholder="Coca Cola 500ml"></div>
-          <div class="form-group"><label>Barcode</label>
-            <input id="p-barcode" class="form-control" placeholder="5000112637922"></div>
-          <div class="form-group"><label>Price ($)</label>
-            <input id="p-price" class="form-control" type="number" step="0.01" placeholder="1.50"></div>
-          <div class="form-group"><label>Stock</label>
-            <input id="p-stock" class="form-control" type="number" placeholder="100"></div>
-          <div class="form-group"><label>Category</label>
-            <input id="p-cat" class="form-control" placeholder="Beverages"></div>
-          <button class="btn btn-success btn-block" onclick="addProduct()">➕ Add Product</button>
-        </div>
-
-        <!-- Product Stats -->
-        <div>
-          <div class="card" style="margin-bottom:16px;">
-            <div class="card-title">📊 Overview</div>
-            <div id="stats-grid" class="grid-3"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Products Table -->
-      <div class="card" style="margin-top:16px;">
-        <div class="card-title" style="justify-content:space-between;">
-          <span>📦 All Products</span>
-          <button class="btn btn-outline btn-sm" onclick="loadProducts()">↻ Refresh</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Name</th><th>Barcode</th><th>Price</th><th>Stock</th><th>Category</th><th>Actions</th></tr></thead>
-            <tbody id="products-body"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- Bills Tab -->
-    <div id="tab-bills" class="hidden">
-      <div class="card">
-        <div class="card-title" style="justify-content:space-between;">
-          <span>🧾 Transaction History</span>
-          <button class="btn btn-outline btn-sm" onclick="loadBills()">↻ Refresh</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Bill No.</th><th>Cart</th><th>Total</th><th>Payment</th><th>Date</th><th>Status</th></tr></thead>
-            <tbody id="bills-body"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- Users Tab -->
-    <div id="tab-users" class="hidden">
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-title">➕ Add User</div>
-          <div class="form-group"><label>Name</label><input id="u-name" class="form-control" placeholder="John Doe"></div>
-          <div class="form-group"><label>Email</label><input id="u-email" class="form-control" type="email" placeholder="john@store.com"></div>
-          <div class="form-group"><label>Password</label><input id="u-pass" class="form-control" type="password" placeholder="••••••••"></div>
-          <div class="form-group"><label>Role</label>
-            <select id="u-role" class="form-control">
-              <option value="cashier">Cashier</option>
-              <option value="product_adder">Product Adder</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-          <button class="btn btn-success btn-block" onclick="addUser()">➕ Add User</button>
-        </div>
-        <div class="card">
-          <div class="card-title" style="justify-content:space-between;">
-            <span>👥 All Users</span>
-            <button class="btn btn-outline btn-sm" onclick="loadUsers()">↻ Refresh</button>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Action</th></tr></thead>
-              <tbody id="users-body"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-box">🔧</div>
+    <strong>NovaMart Admin</strong>
   </div>
+  <div class="role">Admin Dashboard</div>
+</div>
 
-  <script src="/js/api.js"></script>
-  <script>
-    // ── Tabs ──────────────────────────────────────
-    function showTab(tab) {
-      ['products', 'bills', 'users'].forEach(t => {
-        document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== tab);
-      });
-      document.querySelectorAll('.tab-btn').forEach((b, i) => {
-        const tabs = ['products', 'bills', 'users'];
-        b.className = `btn tab-btn ${tabs[i] === tab ? 'btn-primary' : 'btn-outline'}`;
-      });
-      if (tab === 'products') loadProducts();
-      if (tab === 'bills') loadBills();
-      if (tab === 'users') loadUsers();
+<div class="page">
+
+<div class="page-header">
+  <h1>System Management</h1>
+  <p>Manage products, users, and transaction history</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('products', this)">Products</div>
+  <div class="tab" onclick="showTab('bills', this)">Bills</div>
+  <div class="tab" onclick="showTab('users', this)">Users</div>
+</div>
+
+<!-- PRODUCTS -->
+<div id="products">
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-title">Add Product</div>
+
+      <div class="form-group"><input id="p-name" placeholder="Product name"></div>
+      <div class="form-group"><input id="p-barcode" placeholder="Barcode"></div>
+      <div class="form-group"><input id="p-price" type="number" placeholder="Price"></div>
+      <div class="form-group"><input id="p-stock" type="number" placeholder="Stock"></div>
+      <div class="form-group"><input id="p-cat" placeholder="Category"></div>
+
+      <button class="btn btn-success btn-block" onclick="addProduct()">Add Product</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Products</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="products-body"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- BILLS -->
+<div id="bills" class="hidden">
+  <div class="card">
+    <div class="card-title">Transaction History</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Bill</th>
+          <th>Total</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody id="bills-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- USERS -->
+<div id="users" class="hidden">
+  <div class="grid">
+
+    <div class="card">
+      <div class="card-title">Add User</div>
+
+      <div class="form-group"><input id="u-name" placeholder="Name"></div>
+      <div class="form-group"><input id="u-email" placeholder="Email"></div>
+      <div class="form-group"><input id="u-pass" type="password" placeholder="Password"></div>
+
+      <div class="form-group">
+        <select id="u-role">
+          <option value="cashier">Cashier</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+
+      <button class="btn btn-success btn-block" onclick="addUser()">Add User</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Users</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Role</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="users-body"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+</div>
+
+<script src="../public/js/api.js"></script>
+<script>
+function setAlert(message, type = 'info') {
+  const el = document.getElementById('alert');
+  el.className = `alert alert-${type} show`;
+  el.textContent = message;
+
+  clearTimeout(window.__adminAlertTimer);
+  window.__adminAlertTimer = setTimeout(() => {
+    el.className = 'alert';
+    el.textContent = '';
+  }, 4000);
+}
+
+function showTab(tab, el) {
+  ['products', 'bills', 'users'].forEach(t => {
+    document.getElementById(t).classList.toggle('hidden', t !== tab);
+  });
+
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+
+  if (tab === 'products') loadProducts();
+  if (tab === 'bills') loadBills();
+  if (tab === 'users') loadUsers();
+}
+
+async function loadProducts() {
+  try {
+    const res = await api.get('/products');
+    console.log('PRODUCT RESPONSE:', res);
+
+    if (!res || !res.success) {
+      setAlert(res?.message || 'Failed to load products.', 'danger');
+      return;
     }
 
-    // ── Products ──────────────────────────────────
-    async function loadProducts() {
-      const res = await api.get('/products');
-      if (!res.success) return;
-      const products = res.data;
+    const products = Array.isArray(res.data) ? res.data : [];
 
-      // Stats
-      const lowStock = products.filter(p => p.stock < 10).length;
-      document.getElementById('stats-grid').innerHTML = `
-        <div class="stat-card"><div class="stat-num">${products.length}</div><div class="stat-label">Products</div></div>
-        <div class="stat-card"><div class="stat-num" style="color:var(--warning)">${lowStock}</div><div class="stat-label">Low Stock</div></div>
-        <div class="stat-card"><div class="stat-num" style="color:var(--success)">${products.filter(p => p.stock > 0).length}</div><div class="stat-label">In Stock</div></div>
+    const statsGrid = document.getElementById('stats-grid');
+    const productsBody = document.getElementById('products-body');
+
+    const lowStock = products.filter(p => Number(p.stock) < 10).length;
+    const inStock = products.filter(p => Number(p.stock) > 0).length;
+
+    if (statsGrid) {
+      statsGrid.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-num">${products.length}</div>
+          <div class="stat-label">Products</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" style="color: var(--warning);">${lowStock}</div>
+          <div class="stat-label">Low Stock</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" style="color: var(--success);">${inStock}</div>
+          <div class="stat-label">In Stock</div>
+        </div>
       `;
+    }
 
-      document.getElementById('products-body').innerHTML = products.map(p => `
+    if (!productsBody) {
+      console.error('products-body element not found');
+      return;
+    }
+
+    if (products.length === 0) {
+      productsBody.innerHTML = `
         <tr>
-          <td><strong>${p.name}</strong></td>
-          <td><code style="font-size:0.8rem">${p.barcode}</code></td>
-          <td>${formatCurrency(p.price)}</td>
-          <td>
-            <span class="badge ${p.stock < 10 ? 'badge-warning' : 'badge-success'}">${p.stock}</span>
-          </td>
-          <td>${p.category || '—'}</td>
-          <td>
-            <button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})">🗑️ Delete</button>
-          </td>
+          <td colspan="6" style="text-align:center; color:#6b7280;">No products found.</td>
         </tr>
-      `).join('');
+      `;
+      return;
     }
 
-    async function addProduct() {
-      const body = {
-        name: document.getElementById('p-name').value,
-        barcode: document.getElementById('p-barcode').value,
-        price: parseFloat(document.getElementById('p-price').value),
-        stock: parseInt(document.getElementById('p-stock').value) || 0,
-        category: document.getElementById('p-cat').value,
-      };
-      const res = await api.post('/products', body);
-      showAlert(document.getElementById('alert'), res.message, res.success ? 'success' : 'danger');
-      if (res.success) {
-        ['p-name','p-barcode','p-price','p-stock','p-cat'].forEach(id => document.getElementById(id).value = '');
-        loadProducts();
-      }
-    }
+    productsBody.innerHTML = products.map(p => `
+      <tr>
+        <td><strong>${p.name ?? ''}</strong></td>
+        <td><code style="font-size:.82rem;">${p.barcode ?? ''}</code></td>
+        <td>${formatCurrency(p.price ?? 0)}</td>
+        <td>
+          <span class="badge ${Number(p.stock) < 10 ? 'badge-warning' : 'badge-success'}">
+            ${p.stock ?? 0}
+          </span>
+        </td>
+        <td>${p.category || '—'}</td>
+        <td>
+          <button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+  } catch (err) {
+    console.error('loadProducts error:', err);
+    setAlert('Failed to connect to backend for products.', 'danger');
+  }
+}
 
-    async function deleteProduct(id) {
-      if (!confirm('Delete this product?')) return;
-      const res = await api.del(`/products/${id}`);
-      showAlert(document.getElementById('alert'), res.message, res.success ? 'success' : 'danger');
-      if (res.success) loadProducts();
-    }
+async function addProduct() {
+  const body = {
+    name: document.getElementById('p-name').value.trim(),
+    barcode: document.getElementById('p-barcode').value.trim(),
+    price: parseFloat(document.getElementById('p-price').value),
+    stock: parseInt(document.getElementById('p-stock').value) || 0,
+    category: document.getElementById('p-cat').value.trim(),
+  };
 
-    // ── Bills ─────────────────────────────────────
-    async function loadBills() {
-      const res = await api.get('/checkout/bills');
-      if (!res.success) return;
-      const bills = res.data;
-      if (!bills.length) {
-        document.getElementById('bills-body').innerHTML =
-          `<tr><td colspan="6" style="text-align:center;color:var(--muted);">No bills yet</td></tr>`;
-        return;
-      }
-      document.getElementById('bills-body').innerHTML = bills.map(b => `
+  try {
+    const res = await api.post('/products', body);
+    setAlert(
+      res?.message || (res?.success ? 'Product added.' : 'Failed to add product.'),
+      res?.success ? 'success' : 'danger'
+    );
+
+    if (res?.success) {
+      ['p-name', 'p-barcode', 'p-price', 'p-stock', 'p-cat'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      loadProducts();
+    }
+  } catch (err) {
+    console.error('addProduct error:', err);
+    setAlert('Failed to add product.', 'danger');
+  }
+}
+
+async function deleteProduct(id) {
+  if (!confirm('Delete this product?')) return;
+
+  try {
+    const res = await api.del(`/products/${id}`);
+    setAlert(
+      res?.message || (res?.success ? 'Product deleted.' : 'Failed to delete product.'),
+      res?.success ? 'success' : 'danger'
+    );
+
+    if (res?.success) loadProducts();
+  } catch (err) {
+    console.error('deleteProduct error:', err);
+    setAlert('Failed to delete product.', 'danger');
+  }
+}
+
+async function loadBills() {
+  try {
+    const res = await api.get('/checkout/bills');
+    if (!res?.success) return;
+
+    const bills = Array.isArray(res.data) ? res.data : [];
+    const billsBody = document.getElementById('bills-body');
+
+    if (!billsBody) return;
+
+    if (!bills.length) {
+      billsBody.innerHTML = `
         <tr>
-          <td><strong>${b.bill_number}</strong></td>
-          <td>Cart #${b.cart_id}</td>
-          <td style="font-weight:700;">${formatCurrency(b.total_amount)}</td>
-          <td><span class="badge badge-info">${b.payment_method}</span></td>
-          <td>${formatDate(b.created_at)}</td>
-          <td><span class="badge badge-success">${b.status}</span></td>
+          <td colspan="6" style="text-align:center; color:#6b7280;">No bills yet.</td>
         </tr>
-      `).join('');
+      `;
+      return;
     }
 
-    // ── Users ─────────────────────────────────────
-    async function loadUsers() {
-      const res = await api.get('/users');
-      if (!res.success) return;
-      document.getElementById('users-body').innerHTML = res.data.map(u => `
+    billsBody.innerHTML = bills.map(b => `
+      <tr>
+        <td><strong>${b.bill_number}</strong></td>
+        <td>Cart #${b.cart_id}</td>
+        <td><strong>${formatCurrency(b.total_amount)}</strong></td>
+        <td><span class="badge badge-info">${b.payment_method}</span></td>
+        <td>${formatDate(b.created_at)}</td>
+        <td><span class="badge badge-success">${b.status}</span></td>
+      </tr>
+    `).join('');
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function loadUsers() {
+  try {
+    const res = await api.get('/users');
+    if (!res?.success) return;
+
+    const users = Array.isArray(res.data) ? res.data : [];
+    const usersBody = document.getElementById('users-body');
+
+    if (!usersBody) return;
+
+    if (!users.length) {
+      usersBody.innerHTML = `
         <tr>
-          <td><strong>${u.name}</strong></td>
-          <td>${u.email}</td>
-          <td><span class="badge badge-info">${u.role}</span></td>
-          <td><button class="btn btn-danger btn-sm" onclick="deleteUser(${u.id})">🗑️</button></td>
+          <td colspan="4" style="text-align:center; color:#6b7280;">No users found.</td>
         </tr>
-      `).join('');
+      `;
+      return;
     }
 
-    async function addUser() {
-      const body = {
-        name: document.getElementById('u-name').value,
-        email: document.getElementById('u-email').value,
-        password: document.getElementById('u-pass').value,
-        role: document.getElementById('u-role').value,
-      };
-      const res = await api.post('/users', body);
-      showAlert(document.getElementById('alert'), res.message, res.success ? 'success' : 'danger');
-      if (res.success) loadUsers();
-    }
+    usersBody.innerHTML = users.map(u => `
+      <tr>
+        <td><strong>${u.name}</strong></td>
+        <td>${u.email}</td>
+        <td><span class="badge badge-info">${u.role}</span></td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteUser(${u.id})">Delete</button></td>
+      </tr>
+    `).join('');
+  } catch (err) {
+    console.error(err);
+  }
+}
 
-    async function deleteUser(id) {
-      if (!confirm('Delete this user?')) return;
-      const res = await api.del(`/users/${id}`);
-      showAlert(document.getElementById('alert'), res.message, res.success ? 'success' : 'danger');
-      if (res.success) loadUsers();
-    }
+async function addUser() {
+  const body = {
+    name: document.getElementById('u-name').value.trim(),
+    email: document.getElementById('u-email').value.trim(),
+    password: document.getElementById('u-pass').value,
+    role: document.getElementById('u-role').value,
+  };
 
-    // Init
-    loadProducts();
-  </script>
+  try {
+    const res = await api.post('/users', body);
+    setAlert(
+      res?.message || (res?.success ? 'User added.' : 'Failed to add user.'),
+      res?.success ? 'success' : 'danger'
+    );
+
+    if (res?.success) {
+      ['u-name', 'u-email', 'u-pass'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      loadUsers();
+    }
+  } catch (err) {
+    console.error(err);
+    setAlert('Failed to add user.', 'danger');
+  }
+}
+
+async function deleteUser(id) {
+  if (!confirm('Delete this user?')) return;
+
+  try {
+    const res = await api.del(`/users/${id}`);
+    setAlert(
+      res?.message || (res?.success ? 'User deleted.' : 'Failed to delete user.'),
+      res?.success ? 'success' : 'danger'
+    );
+
+    if (res?.success) loadUsers();
+  } catch (err) {
+    console.error(err);
+    setAlert('Failed to delete user.', 'danger');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadProducts();
+});
+</script>
+
 </body>
 </html>

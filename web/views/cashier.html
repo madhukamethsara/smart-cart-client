@@ -1,208 +1,817 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cashier – Smart Cart</title>
-  <link rel="stylesheet" href="/css/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cashier – NovaMart</title>
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --surface: #ffffff;
+      --surface-2: #f9fafb;
+      --border: #e5e7eb;
+      --text: #111827;
+      --muted: #6b7280;
+      --success: #16a34a;
+      --success-dark: #15803d;
+      --danger: #dc2626;
+      --shadow: 0 8px 24px rgba(17, 24, 39, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .topbar {
+      height: 68px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: #111827;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .brand-text h1 {
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .brand-text p {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .role-pill {
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--success-dark);
+      background: rgba(22, 163, 74, 0.1);
+      border: 1px solid rgba(22, 163, 74, 0.18);
+    }
+
+    .page {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .page-header h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .page-header p {
+      max-width: 760px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .header-stats {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .mini-stat {
+      min-width: 170px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .mini-stat span {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .mini-stat strong {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .alert {
+      display: none;
+      margin-bottom: 16px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+    }
+
+    .alert.show {
+      display: block;
+    }
+
+    .alert-success {
+      background: rgba(22, 163, 74, 0.1);
+      color: var(--success-dark);
+      border-color: rgba(22, 163, 74, 0.18);
+    }
+
+    .alert-danger {
+      background: rgba(220, 38, 38, 0.08);
+      color: var(--danger);
+      border-color: rgba(220, 38, 38, 0.14);
+    }
+
+    .alert-warning {
+      background: rgba(245, 158, 11, 0.12);
+      color: #b45309;
+      border-color: rgba(245, 158, 11, 0.16);
+    }
+
+    .alert-info {
+      background: rgba(37, 99, 235, 0.08);
+      color: #1d4ed8;
+      border-color: rgba(37, 99, 235, 0.14);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.45fr 0.95fr;
+      gap: 20px;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel-header {
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-header h3 {
+      font-size: 1.08rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .panel-header p {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .panel-body {
+      padding: 20px;
+    }
+
+    .scan-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+    }
+
+    .form-control {
+      width: 100%;
+      height: 46px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0 14px;
+      background: #fff;
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .form-control:focus {
+      border-color: #9ca3af;
+      box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.05);
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.87rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 0 18px;
+      height: 46px;
+      font-size: 0.93rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.18s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-dark {
+      background: #111827;
+      color: white;
+    }
+
+    .btn-dark:hover {
+      background: #0f172a;
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: var(--success-dark);
+    }
+
+    .btn-block {
+      width: 100%;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--muted);
+    }
+
+    .empty-state .icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 560px;
+    }
+
+    thead {
+      background: var(--surface-2);
+    }
+
+    th, td {
+      padding: 14px 14px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      font-size: 0.93rem;
+    }
+
+    th {
+      font-size: 0.82rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .item-name {
+      font-weight: 600;
+    }
+
+    .item-sub {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .qty-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 34px;
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #3730a3;
+      font-weight: 700;
+      font-size: 0.82rem;
+    }
+
+    .total-box {
+      margin-top: 16px;
+      background: #111827;
+      color: white;
+      border-radius: 12px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .total-box span {
+      font-size: 0.92rem;
+      opacity: 0.82;
+    }
+
+    .total-box strong {
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+
+    .summary-box {
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 14px 0 18px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 0.94rem;
+    }
+
+    .summary-row:last-child {
+      margin-bottom: 0;
+      font-weight: 800;
+      font-size: 1.05rem;
+    }
+
+    .summary-row .muted {
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .receipt-box {
+      border: 1px solid var(--border);
+      background: #fcfcfc;
+      border-radius: 12px;
+      padding: 18px;
+      font-family: Consolas, monospace;
+      font-size: 0.9rem;
+    }
+
+    .receipt-head {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .receipt-head strong {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+
+    .receipt-head span {
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .receipt-box hr {
+      border: none;
+      border-top: 1px dashed #d1d5db;
+      margin: 12px 0;
+    }
+
+    .receipt-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .receipt-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .receipt-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .receipt-actions .btn {
+      flex: 1;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 1100px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .page {
+        padding: 16px;
+      }
+
+      .topbar {
+        height: auto;
+        padding: 16px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .page-header {
+        flex-direction: column;
+      }
+
+      .scan-row {
+        grid-template-columns: 1fr;
+      }
+
+      .receipt-actions {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
-  <nav class="navbar">
-    <span>💳</span>
-    <span class="logo">Smart Cart</span>
-    <span class="role-badge">Cashier View</span>
-  </nav>
-
-  <div class="container">
-    <div id="alert" class="alert hidden"></div>
-
-    <div class="grid-2">
-      <!-- Left: RFID Scan + Cart -->
-      <div>
-        <!-- RFID Input -->
-        <div class="card" style="margin-bottom:16px;">
-          <div class="card-title">📡 Scan Cart RFID</div>
-          <div class="input-group">
-            <input id="rfid-input" class="form-control" placeholder="RFID-CART-001" autofocus />
-            <button class="btn btn-primary" onclick="loadCartByRFID()">Scan</button>
-          </div>
-          <p style="font-size:0.8rem; color:var(--muted); margin-top:8px;">
-            In production, the RFID reader sends this automatically.
-          </p>
-        </div>
-
-        <!-- Cart Items -->
-        <div class="card">
-          <div class="card-title">🧾 Cart Items</div>
-          <div id="cart-empty" class="empty-state">
-            <div class="empty-icon">📡</div>
-            <p>Scan a cart's RFID to load items</p>
-          </div>
-          <div id="cart-content" class="hidden">
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>Product</th><th>Unit Price</th><th>Qty</th><th>Subtotal</th></tr></thead>
-                <tbody id="items-body"></tbody>
-              </table>
-            </div>
-            <div class="total-bar" style="margin-top:16px;">
-              <span class="label">Total</span>
-              <span class="amount" id="total-display">$0.00</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right: Payment -->
-      <div>
-        <div class="card" id="payment-card">
-          <div class="card-title">💰 Payment</div>
-          <div id="payment-idle" style="text-align:center; color:var(--muted); padding:30px 0;">
-            <div style="font-size:2.5rem; margin-bottom:8px;">💳</div>
-            <p>Scan a cart first to enable payment</p>
-          </div>
-
-          <div id="payment-form" class="hidden">
-            <div class="form-group">
-              <label>Cashier ID</label>
-              <input id="cashier-id" class="form-control" type="number" placeholder="1" value="1" />
-            </div>
-            <div class="form-group">
-              <label>Payment Method</label>
-              <select id="payment-method" class="form-control">
-                <option value="cash">💵 Cash</option>
-                <option value="card">💳 Card</option>
-                <option value="digital">📱 Digital Wallet</option>
-              </select>
-            </div>
-
-            <div style="background:var(--bg); border-radius:8px; padding:16px; margin-bottom:16px;">
-              <div style="display:flex; justify-content:space-between; font-size:1.1rem;">
-                <span>Amount Due:</span>
-                <strong id="payment-total">$0.00</strong>
-              </div>
-            </div>
-
-            <button class="btn btn-success btn-block" onclick="processCheckout()" style="font-size:1.1rem; padding:14px;">
-              ✅ Confirm & Checkout
-            </button>
-          </div>
-        </div>
-
-        <!-- Bill Receipt -->
-        <div id="receipt-card" class="card hidden" style="margin-top:16px;">
-          <div class="card-title" style="color:var(--success);">✅ Bill Generated</div>
-          <div id="receipt-content"></div>
-          <button class="btn btn-outline btn-block" style="margin-top:16px;" onclick="printReceipt()">🖨️ Print Receipt</button>
-          <button class="btn btn-primary btn-block" style="margin-top:8px;" onclick="resetCashier()">→ Next Customer</button>
-        </div>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">💳</div>
+      <div class="brand-text">
+        <h1>NovaMart Smart Cart</h1>
+        <p>Cashier Checkout Interface</p>
       </div>
     </div>
-  </div>
+    <div class="role-pill">Cashier Console</div>
+  </header>
 
-  <script src="/js/api.js"></script>
+  <main class="page">
+    <section class="page-header">
+      <div>
+        <h2>Checkout active smart carts</h2>
+        <p>
+          Scan a cart RFID, review the products already attached to that cart, confirm the total amount, and complete the transaction for the current customer.
+        </p>
+      </div>
+
+      <div class="header-stats">
+        <div class="mini-stat">
+          <span>Cart Access</span>
+          <strong>RFID Lookup</strong>
+        </div>
+        <div class="mini-stat">
+          <span>Checkout Mode</span>
+          <strong>Cashier Ready</strong>
+        </div>
+      </div>
+    </section>
+
+    <div id="alert" class="alert"></div>
+
+    <section class="layout">
+      <div class="stack">
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Scan Cart RFID</h3>
+            <p>Load a customer cart using its RFID code.</p>
+          </div>
+          <div class="panel-body">
+            <div class="scan-row">
+              <input id="rfid-input" class="form-control" placeholder="RFID-CART-001" />
+              <button class="btn btn-dark" onclick="loadCartByRFID()">Scan Cart</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Cart Items</h3>
+            <p>Review the products currently attached to the cart.</p>
+          </div>
+          <div class="panel-body">
+            <div id="cart-empty" class="empty-state">
+              <div class="icon">🛒</div>
+              <p>Scan an RFID cart code to load cart details.</p>
+            </div>
+
+            <div id="cart-content" class="hidden">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Product</th>
+                      <th>Unit Price</th>
+                      <th>Qty</th>
+                      <th>Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody id="items-body"></tbody>
+                </table>
+              </div>
+
+              <div class="total-box">
+                <span>Total Amount</span>
+                <strong id="total-display">$0.00</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Checkout</h3>
+            <p>Confirm payment and generate the bill.</p>
+          </div>
+          <div class="panel-body">
+            <div id="payment-idle" class="empty-state">
+              <div class="icon">💳</div>
+              <p>Load a cart first to continue with payment.</p>
+            </div>
+
+            <div id="payment-form" class="hidden">
+              <div class="form-group">
+                <label for="cashier-id">Cashier ID</label>
+                <input id="cashier-id" class="form-control" type="number" value="1" placeholder="1" />
+              </div>
+
+              <div class="form-group">
+                <label for="payment-method">Payment Method</label>
+                <select id="payment-method" class="form-control">
+                  <option value="cash">Cash</option>
+                  <option value="card">Card</option>
+                  <option value="digital">Digital Wallet</option>
+                </select>
+              </div>
+
+              <div class="summary-box">
+                <div class="summary-row">
+                  <span class="muted">Cart Status</span>
+                  <span>Ready for billing</span>
+                </div>
+                <div class="summary-row">
+                  <span>Amount Due</span>
+                  <span id="payment-total">$0.00</span>
+                </div>
+              </div>
+
+              <button class="btn btn-success btn-block" onclick="processCheckout()">
+                Complete Payment
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="receipt-card" class="panel hidden">
+          <div class="panel-header">
+            <h3>Receipt</h3>
+            <p>Generated bill for the completed transaction.</p>
+          </div>
+          <div class="panel-body">
+            <div id="receipt-content"></div>
+
+            <div class="receipt-actions">
+              <button class="btn btn-dark" onclick="printReceipt()">Print Receipt</button>
+              <button class="btn btn-success" onclick="resetCashier()">Next Customer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="../public/js/api.js"></script>
   <script>
     let currentCartId = null;
     let currentTotal = 0;
 
+    function setAlert(message, type = 'info') {
+      const el = document.getElementById('alert');
+      el.className = `alert alert-${type} show`;
+      el.textContent = message;
+
+      clearTimeout(window.__alertTimer);
+      window.__alertTimer = setTimeout(() => {
+        el.className = 'alert';
+        el.textContent = '';
+      }, 4000);
+    }
+
+    function money(value) {
+      return '$' + Number(value || 0).toFixed(2);
+    }
+
+    function dateTime(value) {
+      return new Date(value).toLocaleString();
+    }
+
     async function loadCartByRFID() {
       const rfid = document.getElementById('rfid-input').value.trim();
-      if (!rfid) return;
 
-      const res = await api.get(`/cart/rfid/${encodeURIComponent(rfid)}`);
-      if (!res.success) return showAlert(document.getElementById('alert'), res.message, 'danger');
+      if (!rfid) {
+        setAlert('Please enter an RFID code.', 'warning');
+        return;
+      }
 
-      currentCartId = res.data.cart.id;
-      currentTotal = res.data.total;
+      try {
+        const res = await api.get(`/cart/rfid/${encodeURIComponent(rfid)}`);
 
-      renderItems(res.data.items);
-      document.getElementById('total-display').textContent = formatCurrency(currentTotal);
-      document.getElementById('payment-total').textContent = formatCurrency(currentTotal);
+        if (!res.success) {
+          setAlert(res.message || 'Unable to load cart.', 'danger');
+          return;
+        }
 
-      document.getElementById('cart-empty').classList.add('hidden');
-      document.getElementById('cart-content').classList.remove('hidden');
-      document.getElementById('payment-idle').classList.add('hidden');
-      document.getElementById('payment-form').classList.remove('hidden');
+        currentCartId = res.data.cart.id;
+        currentTotal = Number(res.data.total || 0);
 
-      showAlert(document.getElementById('alert'), `Cart #${currentCartId} loaded with ${res.data.items.length} items`, 'success');
+        renderItems(res.data.items || []);
+        document.getElementById('total-display').textContent = money(currentTotal);
+        document.getElementById('payment-total').textContent = money(currentTotal);
+
+        document.getElementById('cart-empty').classList.add('hidden');
+        document.getElementById('cart-content').classList.remove('hidden');
+        document.getElementById('payment-idle').classList.add('hidden');
+        document.getElementById('payment-form').classList.remove('hidden');
+        document.getElementById('receipt-card').classList.add('hidden');
+
+        setAlert(`Cart #${currentCartId} loaded successfully.`, 'success');
+      } catch (err) {
+        console.error(err);
+        setAlert('Failed to connect to the backend.', 'danger');
+      }
     }
 
     function renderItems(items) {
-      document.getElementById('items-body').innerHTML = items.map(item => `
+      const tbody = document.getElementById('items-body');
+
+      if (!items.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="4" style="text-align:center; color:#6b7280;">No items found in this cart.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = items.map(item => `
         <tr>
           <td>
-            <div style="font-weight:600;">${item.name}</div>
-            <div style="font-size:0.78rem;color:var(--muted);">${item.category || ''}</div>
+            <div class="item-name">${item.name}</div>
+            <div class="item-sub">${item.category || 'General item'}</div>
           </td>
-          <td>${formatCurrency(item.price)}</td>
-          <td><span class="badge badge-info">${item.quantity}</span></td>
-          <td style="font-weight:600;">${formatCurrency(item.price * item.quantity)}</td>
+          <td>${money(item.price)}</td>
+          <td><span class="qty-badge">${item.quantity}</span></td>
+          <td>${money(item.price * item.quantity)}</td>
         </tr>
       `).join('');
     }
 
     async function processCheckout() {
-      if (!currentCartId) return;
-      const cashier_id = document.getElementById('cashier-id').value;
-      const payment_method = document.getElementById('payment-method').value;
+      if (!currentCartId) {
+        setAlert('Load a cart before checkout.', 'warning');
+        return;
+      }
 
-      const res = await api.post('/checkout', {
-        cart_id: currentCartId,
-        cashier_id: parseInt(cashier_id),
-        payment_method,
-      });
+      const cashierId = parseInt(document.getElementById('cashier-id').value || '1', 10);
+      const paymentMethod = document.getElementById('payment-method').value;
 
-      if (!res.success) return showAlert(document.getElementById('alert'), res.message, 'danger');
+      try {
+        const res = await api.post('/checkout', {
+          cart_id: currentCartId,
+          cashier_id: cashierId,
+          payment_method: paymentMethod
+        });
 
-      const bill = res.data.bill;
-      showReceipt(bill);
-      showAlert(document.getElementById('alert'), `Payment successful! Bill: ${bill.bill_number}`, 'success');
-    }
+        if (!res.success) {
+          setAlert(res.message || 'Checkout failed.', 'danger');
+          return;
+        }
 
-    function showReceipt(bill) {
-      document.getElementById('cart-content').classList.add('hidden');
-      document.getElementById('payment-form').classList.add('hidden');
-      document.getElementById('receipt-card').classList.remove('hidden');
+        const bill = res.data.bill;
+        const items = bill.items || [];
 
-      document.getElementById('receipt-content').innerHTML = `
-        <div style="font-family: monospace; border:1px dashed var(--border); border-radius:8px; padding:16px;">
-          <div style="text-align:center; margin-bottom:12px;">
-            <div style="font-weight:800; font-size:1.1rem;">SMART CART STORE</div>
-            <div style="font-size:0.85rem; color:var(--muted);">${formatDate(bill.created_at)}</div>
-            <div style="font-weight:700; margin-top:4px;">${bill.bill_number}</div>
-          </div>
-          <hr style="border:none; border-top:1px dashed var(--border); margin:10px 0;">
-          ${bill.items.map(i => `
-            <div style="display:flex; justify-content:space-between; font-size:0.88rem; margin-bottom:4px;">
-              <span>${i.product_name} x${i.quantity}</span>
-              <span>${formatCurrency(i.subtotal)}</span>
+        document.getElementById('receipt-content').innerHTML = `
+          <div class="receipt-box">
+            <div class="receipt-head">
+              <strong>NovaMart Smart Cart</strong>
+              <span>${dateTime(bill.created_at)}</span>
+              <strong style="margin-top:8px;">${bill.bill_number}</strong>
             </div>
-          `).join('')}
-          <hr style="border:none; border-top:1px dashed var(--border); margin:10px 0;">
-          <div style="display:flex; justify-content:space-between; font-weight:800; font-size:1rem;">
-            <span>TOTAL</span><span>${formatCurrency(bill.total_amount)}</span>
+            <hr>
+            ${items.map(item => `
+              <div class="receipt-row">
+                <span>${item.product_name} × ${item.quantity}</span>
+                <span>${money(item.subtotal)}</span>
+              </div>
+            `).join('')}
+            <hr>
+            <div class="receipt-row" style="font-weight:800;">
+              <span>TOTAL</span>
+              <span>${money(bill.total_amount)}</span>
+            </div>
+            <div style="margin-top:12px; text-align:center; color:#6b7280; font-size:0.82rem;">
+              Payment: ${String(bill.payment_method).toUpperCase()}
+            </div>
           </div>
-          <div style="text-align:center; margin-top:12px; font-size:0.8rem; color:var(--muted);">
-            Payment: ${bill.payment_method.toUpperCase()} | Thank you! 🙏
-          </div>
-        </div>
-      `;
+        `;
+
+        document.getElementById('receipt-card').classList.remove('hidden');
+        document.getElementById('payment-form').classList.add('hidden');
+
+        setAlert(`Checkout complete. Bill ${bill.bill_number} generated.`, 'success');
+      } catch (err) {
+        console.error(err);
+        setAlert('Failed to complete checkout.', 'danger');
+      }
     }
 
-    function printReceipt() { window.print(); }
+    function printReceipt() {
+      window.print();
+    }
 
     function resetCashier() {
       currentCartId = null;
+      currentTotal = 0;
+
       document.getElementById('rfid-input').value = '';
+      document.getElementById('items-body').innerHTML = '';
+      document.getElementById('total-display').textContent = '$0.00';
+      document.getElementById('payment-total').textContent = '$0.00';
+
       document.getElementById('cart-empty').classList.remove('hidden');
       document.getElementById('cart-content').classList.add('hidden');
       document.getElementById('payment-idle').classList.remove('hidden');
       document.getElementById('payment-form').classList.add('hidden');
       document.getElementById('receipt-card').classList.add('hidden');
+
+      setAlert('Cashier screen reset for next customer.', 'info');
     }
 
-    // Allow Enter key on RFID input
-    document.getElementById('rfid-input').addEventListener('keyup', e => {
+    document.getElementById('rfid-input').addEventListener('keyup', (e) => {
       if (e.key === 'Enter') loadCartByRFID();
     });
   </script>

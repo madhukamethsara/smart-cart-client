@@ -1,56 +1,1080 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Cart System</title>
-  <link rel="stylesheet" href="/css/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NovaMart Smart Cart</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); }
-    .landing { text-align: center; color: white; }
-    .landing h1 { font-size: 2.8rem; font-weight: 800; margin-bottom: 8px; }
-    .landing p { font-size: 1.1rem; opacity: 0.85; margin-bottom: 40px; }
-    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 700px; }
-    .role-card {
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.3);
-      backdrop-filter: blur(10px);
-      border-radius: 14px;
-      padding: 30px 20px;
-      text-decoration: none;
-      color: white;
-      transition: all 0.25s;
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
-    .role-card:hover { background: rgba(255,255,255,0.25); transform: translateY(-4px); }
-    .role-card .icon { font-size: 2.5rem; margin-bottom: 12px; }
-    .role-card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; }
-    .role-card p { font-size: 0.85rem; opacity: 0.8; }
-    @media (max-width: 600px) { .cards { grid-template-columns: 1fr; } }
+
+    :root {
+      --bg: #ffffff;
+      --bg-2: #f9f9f9;
+      --bg-3: #f2f2f2;
+      --border: #e8e8e8;
+      --border-dark: #d0d0d0;
+      --ink: #0a0a0a;
+      --ink-2: #1a1a1a;
+      --ink-3: #555555;
+      --ink-4: #999999;
+      --ink-5: #bbbbbb;
+      --black: #0a0a0a;
+      --white: #ffffff;
+      --accent: #0a0a0a;
+      --accent-inv: #ffffff;
+      --green: #1a6b36;
+      --green-bg: #f0f7f3;
+      --amber: #8a5c00;
+      --amber-bg: #fdf8ee;
+      --radius-sm: 4px;
+      --radius: 8px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.07);
+      --shadow: 0 4px 20px rgba(0,0,0,0.08);
+      --shadow-lg: 0 12px 48px rgba(0,0,0,0.12);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Syne', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      background: var(--white);
+      border-bottom: 1.5px solid var(--ink);
+      padding: 0 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      background: var(--black);
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-mark svg {
+      width: 17px;
+      height: 17px;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-name {
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink);
+      line-height: 1;
+    }
+
+    .brand-sub {
+      font-size: 0.7rem;
+      color: var(--ink-4);
+      margin-top: 3px;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 12px;
+      border-radius: 2px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      border: 1.5px solid var(--border-dark);
+      background: var(--white);
+      color: var(--ink-3);
+      text-transform: uppercase;
+    }
+
+    .status-pill.online {
+      border-color: var(--green);
+      background: var(--green-bg);
+      color: var(--green);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      flex-shrink: 0;
+    }
+
+    .status-dot.pulse {
+      animation: pulse 2.4s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* ── TICKER ── */
+    .ticker {
+      background: var(--black);
+      color: var(--white);
+      overflow: hidden;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid #222;
+    }
+
+    .ticker-track {
+      display: flex;
+      gap: 0;
+      animation: ticker 30s linear infinite;
+      white-space: nowrap;
+    }
+
+    .ticker-item {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      padding: 0 32px;
+      color: rgba(255,255,255,0.7);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ticker-item::after {
+      content: '—';
+      color: rgba(255,255,255,0.25);
+    }
+
+    .ticker-item.hl { color: #ffffff; }
+
+    @keyframes ticker {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: var(--white);
+      border-bottom: 1.5px solid var(--ink);
+      padding: 80px 48px 72px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: 80px;
+      align-items: start;
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin-bottom: 28px;
+      border: 1.5px solid var(--border-dark);
+      padding: 5px 12px;
+      border-radius: 2px;
+      width: fit-content;
+    }
+
+    .eyebrow-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--ink-3);
+      flex-shrink: 0;
+    }
+
+    .hero h1 {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(3rem, 4.5vw, 5rem);
+      line-height: 1.0;
+      letter-spacing: -0.03em;
+      color: var(--ink);
+      margin-bottom: 24px;
+      font-weight: 400;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+    }
+
+    .hero-desc {
+      font-size: 0.95rem;
+      color: var(--ink-3);
+      line-height: 1.85;
+      max-width: 520px;
+      margin-bottom: 40px;
+      font-weight: 400;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 22px;
+      border-radius: 2px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      font-family: 'Syne', sans-serif;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      border: 1.5px solid transparent;
+      cursor: pointer;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .btn svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+
+    .btn-primary {
+      background: var(--black);
+      color: var(--white);
+      border-color: var(--black);
+    }
+
+    .btn-primary:hover {
+      background: #222;
+      box-shadow: 4px 4px 0px var(--border-dark);
+      transform: translate(-2px, -2px);
+    }
+
+    .btn-outline {
+      background: var(--white);
+      color: var(--ink);
+      border-color: var(--border-dark);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--ink);
+      box-shadow: 4px 4px 0px var(--border);
+      transform: translate(-2px, -2px);
+    }
+
+    /* ── STATUS CARD ── */
+    .status-card {
+      background: var(--white);
+      border: 1.5px solid var(--ink);
+      border-radius: 0;
+      overflow: hidden;
+      box-shadow: 6px 6px 0 var(--ink);
+    }
+
+    .status-card-header {
+      background: var(--black);
+      border-bottom: 1.5px solid var(--ink);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .status-card-header h3 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--white);
+      font-family: 'Syne', sans-serif;
+    }
+
+    .status-card-header p {
+      font-size: 0.68rem;
+      color: rgba(255,255,255,0.45);
+      margin-top: 3px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      color: #4ade80;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .status-rows {
+      padding: 0;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 20px;
+      border-bottom: 1px solid var(--border);
+      gap: 12px;
+    }
+
+    .status-row:last-child {
+      border-bottom: none;
+    }
+
+    .status-label {
+      font-size: 0.8rem;
+      color: var(--ink-3);
+      font-weight: 400;
+    }
+
+    .status-value {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      letter-spacing: 0.05em;
+    }
+
+    .status-value.ok { color: var(--green); }
+    .status-value.warn { color: var(--amber); }
+    .status-value.neutral { color: var(--ink-3); }
+
+    .status-indicator {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .ok .status-indicator { background: var(--green); }
+    .warn .status-indicator { background: var(--amber); }
+    .neutral .status-indicator { background: var(--ink-5); }
+
+    .status-card-note {
+      padding: 14px 20px;
+      font-size: 0.75rem;
+      color: var(--ink-4);
+      line-height: 1.75;
+      border-top: 1px solid var(--border);
+      background: var(--bg-2);
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    /* ── METRICS STRIP ── */
+    .metrics-strip {
+      background: var(--bg);
+      border-bottom: 1.5px solid var(--ink);
+    }
+
+    .metrics-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .metric {
+      padding: 32px 48px;
+      border-right: 1.5px solid var(--ink);
+      position: relative;
+    }
+
+    .metric:last-child {
+      border-right: none;
+    }
+
+    .metric-num {
+      font-family: 'Instrument Serif', serif;
+      font-size: 0.7rem;
+      font-weight: 400;
+      font-style: italic;
+      color: var(--ink-4);
+      letter-spacing: 0.06em;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .metric-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .metric-value {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.8rem;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    .metric-detail {
+      font-size: 0.72rem;
+      color: var(--ink-4);
+      margin-top: 8px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 400;
+    }
+
+    /* ── MODULES ── */
+    .modules {
+      padding: 72px 48px;
+      background: var(--bg);
+    }
+
+    .modules-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-header {
+      margin-bottom: 40px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      border-bottom: 1.5px solid var(--border-dark);
+      padding-bottom: 20px;
+    }
+
+    .section-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-4);
+      margin-bottom: 8px;
+    }
+
+    .section-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 2.4rem;
+      color: var(--ink);
+      font-weight: 400;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    .section-count {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--ink-4);
+      letter-spacing: 0.06em;
+      padding-bottom: 4px;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border: 1.5px solid var(--ink);
+    }
+
+    .module-card {
+      background: var(--white);
+      padding: 40px;
+      text-decoration: none;
+      color: var(--ink);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      transition: all 0.18s ease;
+      position: relative;
+      overflow: hidden;
+      border-right: 1.5px solid var(--ink);
+    }
+
+    .module-card:last-child {
+      border-right: none;
+    }
+
+    .module-card:hover {
+      background: var(--black);
+    }
+
+    .module-card:hover .card-body h3,
+    .module-card:hover .card-body p,
+    .module-card:hover .card-index {
+      color: var(--white);
+    }
+
+    .module-card:hover .card-body p {
+      color: rgba(255,255,255,0.55);
+    }
+
+    .module-card:hover .tag {
+      border-color: rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.5);
+    }
+
+    .module-card:hover .card-icon {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.15);
+    }
+
+    .module-card:hover .card-icon svg {
+      stroke: rgba(255,255,255,0.8);
+    }
+
+    .module-card:hover .card-arrow {
+      background: var(--white);
+      border-color: var(--white);
+    }
+
+    .module-card:hover .card-arrow svg {
+      stroke: var(--black);
+    }
+
+    .card-index {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--ink-4);
+      letter-spacing: 0.1em;
+      transition: color 0.18s ease;
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 2px;
+      border: 1.5px solid var(--border-dark);
+      background: var(--bg-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.18s ease;
+    }
+
+    .card-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--ink-2);
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: stroke 0.18s ease;
+    }
+
+    .card-arrow {
+      width: 34px;
+      height: 34px;
+      border-radius: 2px;
+      border: 1.5px solid var(--border-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.18s ease;
+      background: var(--white);
+    }
+
+    .card-arrow svg {
+      width: 13px;
+      height: 13px;
+      stroke: var(--ink-3);
+      fill: none;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: stroke 0.18s ease;
+    }
+
+    .card-body h3 {
+      font-family: 'Instrument Serif', serif;
+      font-size: 2rem;
+      font-weight: 400;
+      letter-spacing: -0.03em;
+      margin-bottom: 10px;
+      color: var(--ink);
+      line-height: 1.05;
+      transition: color 0.18s ease;
+    }
+
+    .card-body p {
+      font-size: 0.88rem;
+      color: var(--ink-3);
+      line-height: 1.8;
+      font-weight: 400;
+      transition: color 0.18s ease;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tag {
+      padding: 4px 10px;
+      border-radius: 2px;
+      border: 1px solid var(--border);
+      background: transparent;
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--ink-4);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-family: 'IBM Plex Mono', monospace;
+      transition: all 0.18s ease;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      background: var(--black);
+      border-top: 1.5px solid var(--ink);
+      padding: 20px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .footer-brand {
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .footer-divider {
+      width: 1px;
+      height: 14px;
+      background: rgba(255,255,255,0.15);
+    }
+
+    .footer-note {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.3);
+      font-family: 'IBM Plex Mono', monospace;
+      letter-spacing: 0.04em;
+    }
+
+    .footer-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .footer-endpoint {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 2px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.68rem;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.04em;
+    }
+
+    .endpoint-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #4ade80;
+      flex-shrink: 0;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 960px) {
+      .hero-inner {
+        grid-template-columns: 1fr;
+        gap: 48px;
+      }
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+      .module-card {
+        border-right: none;
+        border-bottom: 1.5px solid var(--ink);
+      }
+      .module-card:last-child {
+        border-bottom: none;
+      }
+      .metrics-inner {
+        grid-template-columns: 1fr;
+      }
+      .metric {
+        border-right: none;
+        border-bottom: 1.5px solid var(--border-dark);
+      }
+      .metric:last-child {
+        border-bottom: none;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .topbar { padding: 0 20px; }
+      .hero, .modules, .footer, .metrics-strip { padding-left: 20px; padding-right: 20px; }
+      .hero h1 { font-size: 2.6rem; }
+      .topbar-right .status-pill:last-child { display: none; }
+      .hero-actions { flex-direction: column; }
+      .btn { width: 100%; justify-content: center; }
+      .footer { flex-direction: column; align-items: flex-start; }
+      .section-header { flex-direction: column; align-items: flex-start; gap: 4px; }
+      .metric { padding: 24px 20px; }
+      .module-card { padding: 28px 20px; }
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-inner { animation: fadeUp 0.5s ease both; }
+    .metrics-inner { animation: fadeUp 0.5s 0.1s ease both; }
+    .cards-grid { animation: fadeUp 0.5s 0.18s ease both; }
   </style>
 </head>
 <body>
-  <div class="landing">
-    <div style="font-size:3.5rem; margin-bottom:12px;">🛒</div>
-    <h1>Smart Cart System</h1>
-    <p>IoT-powered supermarket POS with real-time cart tracking</p>
-    <div class="cards">
-      <a href="/customer" class="role-card">
-        <div class="icon">🧑‍🛒</div>
-        <h3>Customer</h3>
-        <p>View your cart and scanned items</p>
-      </a>
-      <a href="/cashier" class="role-card">
-        <div class="icon">💳</div>
-        <h3>Cashier</h3>
-        <p>Process payments and checkout</p>
-      </a>
-      <a href="/admin" class="role-card">
-        <div class="icon">🔧</div>
-        <h3>Admin</h3>
-        <p>Manage products and reports</p>
-      </a>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24">
+          <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">NovaMart Smart Cart</span>
+        <span class="brand-sub">Retail Checkout &amp; Operations Platform</span>
+      </div>
     </div>
-    <p style="margin-top: 40px; font-size: 0.8rem; opacity: 0.6;">API running at <code>/api/health</code></p>
+    <div class="topbar-right">
+      <div class="status-pill online">
+        <span class="status-dot pulse"></span>
+        Store Network Connected
+      </div>
+      <div class="status-pill">Staff Access Portal</div>
+      <div id="auth-area"></div>
+    </div>
+  </header>
+
+  <!-- TICKER -->
+  <div class="ticker">
+    <div class="ticker-track">
+      <span class="ticker-item hl">BACKEND SERVICE: ONLINE</span>
+      <span class="ticker-item">CART SESSION HANDLING: READY</span>
+      <span class="ticker-item hl">BARCODE ITEM FLOW: ACTIVE</span>
+      <span class="ticker-item">WEIGHT VALIDATION: PENDING SENSOR CHECK</span>
+      <span class="ticker-item">RFID: PASSIVE ID ACTIVE</span>
+      <span class="ticker-item hl">COUNTER TERMINALS: ACTIVE</span>
+      <span class="ticker-item">SCANNER ENDPOINTS: ONLINE</span>
+      <!-- duplicate for seamless loop -->
+      <span class="ticker-item hl">BACKEND SERVICE: ONLINE</span>
+      <span class="ticker-item">CART SESSION HANDLING: READY</span>
+      <span class="ticker-item hl">BARCODE ITEM FLOW: ACTIVE</span>
+      <span class="ticker-item">WEIGHT VALIDATION: PENDING SENSOR CHECK</span>
+      <span class="ticker-item">RFID: PASSIVE ID ACTIVE</span>
+      <span class="ticker-item hl">COUNTER TERMINALS: ACTIVE</span>
+      <span class="ticker-item">SCANNER ENDPOINTS: ONLINE</span>
+    </div>
   </div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-grid-bg"></div>
+    <div class="hero-inner">
+      <div class="hero-left">
+        <div class="eyebrow">
+          <span class="eyebrow-dot"></span>
+          Smart Supermarket Control Interface
+        </div>
+        <h1>Built for real checkout desks and <em>live cart</em> operations.</h1>
+        <p class="hero-desc">
+          NovaMart Smart Cart connects cart identification, barcode-based item flow, and cashier-side checkout into one unified retail interface. Select a module below to begin billing or manage store administration.
+        </p>
+        <div class="hero-actions">
+          <a href="cashier.html" class="btn btn-primary">
+            <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            Enter Cashier Panel
+          </a>
+          <a href="admin.html" class="btn btn-outline">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+            Open Admin Console
+          </a>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <div class="status-card">
+          <div class="status-card-header">
+            <div>
+              <h3>Store Status Overview</h3>
+              <p>live supermarket platform snapshot</p>
+            </div>
+            <div class="live-badge">
+              <span class="status-dot pulse"></span>
+              Live
+            </div>
+          </div>
+          <div class="status-rows">
+            <div class="status-row">
+              <span class="status-label">Backend Service</span>
+              <span class="status-value ok">
+                <span class="status-indicator"></span>
+                ONLINE
+              </span>
+            </div>
+            <div class="status-row">
+              <span class="status-label">Cart Session Handling</span>
+              <span class="status-value neutral">
+                <span class="status-indicator"></span>
+                READY
+              </span>
+            </div>
+            <div class="status-row">
+              <span class="status-label">Barcode Item Flow</span>
+              <span class="status-value ok">
+                <span class="status-indicator"></span>
+                ACTIVE ROUTE
+              </span>
+            </div>
+            <div class="status-row">
+              <span class="status-label">Weight Validation</span>
+              <span class="status-value warn">
+                <span class="status-indicator"></span>
+                PENDING CHECK
+              </span>
+            </div>
+          </div>
+          <div class="status-card-note">
+            Entry point for supermarket staff. Provides quick access to billing and administration reflecting the real-time smart cart workflow.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- METRICS STRIP -->
+  <div class="metrics-strip">
+    <div class="metrics-inner">
+      <div class="metric">
+        <span class="metric-num">01</span>
+        <div class="metric-label">Cart Recognition</div>
+        <div class="metric-value">RFID Linked</div>
+        <div class="metric-detail">Passive identification active</div>
+      </div>
+      <div class="metric">
+        <span class="metric-num">02</span>
+        <div class="metric-label">Product Flow</div>
+        <div class="metric-value">Barcode Verified</div>
+        <div class="metric-detail">Scanner endpoints online</div>
+      </div>
+      <div class="metric">
+        <span class="metric-num">03</span>
+        <div class="metric-label">Checkout Mode</div>
+        <div class="metric-value">Cashier Ready</div>
+        <div class="metric-detail">Counter terminals active</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODULES -->
+  <section class="modules">
+    <div class="modules-inner">
+      <div class="section-header">
+        <div>
+          <div class="section-label">Platform Modules</div>
+          <h2 class="section-title">Select your workspace</h2>
+        </div>
+        <span class="section-count">02 modules available</span>
+      </div>
+      <div class="cards-grid">
+
+        <a href="cashier.html" class="module-card">
+          <div class="card-index">MODULE — 01</div>
+          <div class="card-top">
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24">
+                <rect x="2" y="5" width="20" height="14" rx="2"/>
+                <line x1="2" y1="10" x2="22" y2="10"/>
+              </svg>
+            </div>
+            <div class="card-arrow">
+              <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </div>
+          </div>
+          <div class="card-body">
+            <h3>Cashier Panel</h3>
+            <p>Retrieve active carts, review scanned items, verify totals, and complete the billing process directly from the store counter terminal.</p>
+          </div>
+          <div class="card-tags">
+            <span class="tag">Cart Lookup</span>
+            <span class="tag">Billing</span>
+            <span class="tag">Checkout</span>
+          </div>
+        </a>
+
+        <a href="admin.html" class="module-card">
+          <div class="card-index">MODULE — 02</div>
+          <div class="card-top">
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5"/>
+                <path d="M2 12l10 5 10-5"/>
+              </svg>
+            </div>
+            <div class="card-arrow">
+              <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </div>
+          </div>
+          <div class="card-body">
+            <h3>Admin Console</h3>
+            <p>Manage supermarket products, maintain store-side data records, and supervise operational readiness across the entire smart cart platform.</p>
+          </div>
+          <div class="card-tags">
+            <span class="tag">Products</span>
+            <span class="tag">Inventory Data</span>
+            <span class="tag">Operations</span>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-left">
+      <span class="footer-brand">NovaMart Smart Cart</span>
+      <div class="footer-divider"></div>
+      <span class="footer-note">Staff Interface — Restricted Access</span>
+    </div>
+    <div class="footer-right">
+      <div class="footer-endpoint">
+        <span class="endpoint-dot"></span>
+        http://localhost:8787/api/health
+      </div>
+    </div>
+  </footer>
+
+  <script src="../public/js/api.js"></script>
+  <script>
+    (function(){
+      function renderAuth(){
+        const authArea = document.getElementById('auth-area');
+        if (!authArea) return;
+        const user = window.auth && window.auth.currentUser ? window.auth.currentUser() : null;
+        if (user) {
+          authArea.innerHTML = `
+            <div class="status-pill" style="display:inline-flex; align-items:center; gap:8px;">
+              <strong style="font-size:0.88rem">${user.username}</strong>
+            </div>
+            <button id="logoutBtn" class="btn btn-outline" style="font-size:0.8rem; padding:7px 12px; margin-left:8px;">Logout</button>`;
+          const btn = document.getElementById('logoutBtn');
+          btn.addEventListener('click', () => { window.auth.logout(); renderAuth(); });
+        } else {
+          authArea.innerHTML = `
+            <a href="login.html" class="btn btn-outline" style="font-size:0.8rem; padding:7px 12px; margin-left:8px;">Login</a>
+            <a href="register.html" class="btn btn-primary" style="font-size:0.8rem; padding:7px 12px; margin-left:6px;">Sign Up</a>`;
+        }
+      }
+      document.addEventListener('DOMContentLoaded', renderAuth);
+    })();
+  </script>
+
 </body>
 </html>
