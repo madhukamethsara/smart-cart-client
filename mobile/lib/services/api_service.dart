@@ -1,32 +1,39 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 
 class ApiService {
   static const String _baseUrlKey = 'api_base_url';
+  static const String _compiledBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://10.0.2.2:8787',
+  );
 
-  static String _defaultUrl() {
-    if (kIsWeb) {
-      return 'http://localhost:8787/api';
-    }
-    if (Platform.isAndroid) {
+  static String _normalizeBaseUrl(String url) {
+    final trimmed = url.trim();
+    if (trimmed.isEmpty) {
       return 'http://10.0.2.2:8787/api';
     }
-    return 'http://localhost:8787/api';
+
+    final clean = trimmed.endsWith('/')
+        ? trimmed.substring(0, trimmed.length - 1)
+        : trimmed;
+
+    return clean.endsWith('/api') ? clean : '$clean/api';
   }
 
-  static String _baseUrl = 'http://10.0.2.2:8787/api';
+  static String _baseUrl = _normalizeBaseUrl(_compiledBaseUrl);
 
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    _baseUrl = prefs.getString(_baseUrlKey) ?? _defaultUrl();
+    _baseUrl =
+        _normalizeBaseUrl(prefs.getString(_baseUrlKey) ?? _compiledBaseUrl);
   }
 
   static Future<void> setBaseUrl(String url) async {
-    _baseUrl = url.endsWith('/api') ? url : '$url/api';
+    _baseUrl = _normalizeBaseUrl(url);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_baseUrlKey, _baseUrl);
   }
@@ -39,8 +46,9 @@ class ApiService {
       };
 
   static Uri _uri(String path, [Map<String, dynamic>? queryParams]) {
-    final cleanBase =
-        _baseUrl.endsWith('/') ? _baseUrl.substring(0, _baseUrl.length - 1) : _baseUrl;
+    final cleanBase = _baseUrl.endsWith('/')
+        ? _baseUrl.substring(0, _baseUrl.length - 1)
+        : _baseUrl;
     final cleanPath = path.startsWith('/') ? path : '/$path';
 
     return Uri.parse('$cleanBase$cleanPath').replace(

@@ -54,11 +54,20 @@ flutter run -d <device-id>
 
 ## Backend Integration
 
-The app connects to your NovaMart backend at `http://localhost:8787`.
+The app reads the backend base URL from compile-time variable `API_BASE_URL`.
 
-To change the backend URL:
-- Open **Settings** in the app → enter your URL → tap **Test Connection** → **Save**
-- Or update `_defaultUrl` in `lib/services/api_service.dart`
+Default (when not provided): `http://10.0.2.2:8787`
+
+To change the backend URL at build/run time:
+- Android emulator/local backend:
+  - `flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8787`
+- iOS simulator/local backend:
+  - `flutter run --dart-define=API_BASE_URL=http://localhost:8787`
+- Production/staging:
+  - `flutter run --dart-define=API_BASE_URL=https://api.example.com`
+  - `flutter build apk --dart-define=API_BASE_URL=https://api.example.com`
+
+You can still override and save the URL in **Settings** inside the app.
 
 ### API Endpoints Used
 
