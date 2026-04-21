@@ -1,5 +1,6 @@
 // ── Shared API Client ─────────────────────────────────────────────────────────
 const API_BASE = 'http://localhost:8787/api';
+const SESSION_KEY = 'nm_session';
 
 async function parseJsonSafely(response) {
   try {
@@ -9,19 +10,50 @@ async function parseJsonSafely(response) {
   }
 }
 
+function getSession() {
+  try {
+    return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+  } catch (error) {
+    return null;
+  }
+}
+
+function saveSession(session) {
+  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+}
+
+function clearSession() {
+  localStorage.removeItem(SESSION_KEY);
+}
+
+function getAuthHeaders() {
+  const token = getSession()?.token;
+  if (!token) return {};
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+}
+
 async function apiRequest(path, options = {}) {
   try {
+    const mergedHeaders = {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+      ...(options.headers || {}),
+    };
+
     const response = await fetch(`${API_BASE}${path}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...(options.headers || {}),
-      },
       ...options,
+      headers: mergedHeaders,
     });
 
     const data = await parseJsonSafely(response);
 
     if (!response.ok) {
+      if (!path.startsWith('/auth/') && (response.status === 401 || response.status === 403)) {
+        clearSession();
+      }
+
       return {
         success: false,
         status: response.status,
@@ -106,144 +138,102 @@ function formatDate(dateStr) {
   return date.toLocaleString();
 }
 
-// ── Local Storage Helpers ─────────────────────────────────────────────────────
-function getLocalUsers() {
-  try {
-    return JSON.parse(localStorage.getItem('nm_users') || '[]');
-  } catch (error) {
-    return [];
-  }
-}
+// ── Auth Helpers (JWT) ─────────────────────────────────────────────────────────
+async function registerUser({ name, password }) {
+  const res = await api.post('/auth/signup', {
+    name,
+    password,
+  });
 
-function saveLocalUsers(users) {
-  localStorage.setItem('nm_users', JSON.stringify(users));
-}
-
-function saveSession(session) {
-  localStorage.setItem('nm_session', JSON.stringify(session));
-}
-
-function getSession() {
-  try {
-    return JSON.parse(localStorage.getItem('nm_session') || 'null');
-  } catch (error) {
-    return null;
-  }
-}
-
-// ── Simple Auth Helpers (server-first, localStorage fallback) ────────────────
-async function registerUser({ username, password, role = 'staff' }) {
-  try {
-    const serverRes = await api.post('/auth/register', {
-      username,
-      password,
-      role,
-    });
-
-    if (serverRes?.success || serverRes?.ok || serverRes?.id || serverRes?.user) {
-      return {
-        success: true,
-        message: serverRes.message || 'User registered successfully',
-        data: serverRes,
-      };
-    }
-  } catch (error) {
-    // fallback continues below
-  }
-
-  const users = getLocalUsers();
-
-  const existingUser = users.find((user) => user.username === username);
-  if (existingUser) {
+  if (!res?.success) {
     return {
       success: false,
-      message: 'User already exists',
+      message: res?.message || 'Registration failed',
+      errors: res?.errors || [],
     };
   }
 
-  const user = {
-    id: Date.now(),
-    username,
-    password,
-    role,
-  };
-
-  users.push(user);
-  saveLocalUsers(users);
-
   return {
     success: true,
-    message: 'User registered locally',
-    user,
+    message: res.message || 'Registration successful',
+    data: res.data || null,
   };
 }
 
-async function loginUser({ username, password }) {
-  try {
-    const serverRes = await api.post('/auth/login', {
-      username,
-      password,
-    });
+async function loginUser({ name, password }) {
+  const res = await api.post('/auth/login', {
+    name,
+    password,
+  });
 
-    if (serverRes?.token || serverRes?.success || serverRes?.ok) {
-      const session = {
-        token: serverRes.token || `server-${Date.now()}`,
-        user: serverRes.user || {
-          username,
-          role: serverRes.role || 'staff',
-        },
-      };
-
-      saveSession(session);
-
-      return {
-        success: true,
-        message: serverRes.message || 'Login successful',
-        token: session.token,
-        user: session.user,
-      };
-    }
-  } catch (error) {
-    // fallback continues below
-  }
-
-  const users = getLocalUsers();
-  const user = users.find(
-    (item) => item.username === username && item.password === password
-  );
-
-  if (!user) {
+  if (!res?.success || !res?.data?.token || !res?.data?.user) {
     return {
       success: false,
-      message: 'Invalid credentials',
+      message: res?.message || 'Invalid credentials',
+      errors: res?.errors || [],
     };
   }
 
   const session = {
-    token: `local-${btoa(String(user.id))}`,
-    user: {
-      id: user.id,
-      username: user.username,
-      role: user.role,
-    },
+    token: res.data.token,
+    user: res.data.user,
   };
 
   saveSession(session);
 
   return {
     success: true,
-    message: 'Login successful (local)',
+    message: res.message || 'Login successful',
     token: session.token,
     user: session.user,
   };
 }
 
 function logout() {
-  localStorage.removeItem('nm_session');
+  clearSession();
 }
 
 function currentUser() {
   return getSession()?.user || null;
+}
+
+function isAuthenticated() {
+  const session = getSession();
+  return Boolean(session?.token && session?.user);
+}
+
+function redirectToDashboard(user = currentUser()) {
+  if (!user) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  if (user.role === 'admin') {
+    window.location.href = 'admin.html';
+    return;
+  }
+
+  if (user.role === 'cashier') {
+    window.location.href = 'cashier.html';
+    return;
+  }
+
+  window.location.href = 'login.html';
+}
+
+function enforceRole(requiredRole) {
+  const user = currentUser();
+  if (!isAuthenticated()) {
+    window.location.href = 'login.html';
+    return false;
+  }
+
+  if (user.role !== requiredRole) {
+    redirectToDashboard(user);
+    return false;
+  }
+
+  return true;
 }
 
 // compatibility helpers expected by older admin page
@@ -270,4 +260,8 @@ window.auth = {
   loginUser,
   logout,
   currentUser,
+  getSession,
+  isAuthenticated,
+  redirectToDashboard,
+  enforceRole,
 };

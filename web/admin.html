@@ -213,6 +213,7 @@ code { font-family: 'IBM Plex Mono', monospace; font-size: .75rem; color: var(--
     <div class="pill green"><span class="dot"></span>System Online</div>
     <div class="pill" id="topbar-user">Admin</div>
     <div class="pill" id="api-base-pill">API</div>
+    <button class="btn btn-ghost btn-sm" id="logout-btn" type="button">Logout</button>
   </div>
 </header>
 
@@ -392,7 +393,6 @@ code { font-family: 'IBM Plex Mono', monospace; font-size: .75rem; color: var(--
             <select class="form-input" id="u-role">
               <option value="cashier">cashier</option>
               <option value="admin">admin</option>
-              <option value="product_adder">product_adder</option>
             </select>
           </div>
           <button class="btn btn-dark btn-block" onclick="addUser()">Add User</button>
@@ -434,7 +434,7 @@ code { font-family: 'IBM Plex Mono', monospace; font-size: .75rem; color: var(--
         <div class="card">
           <div class="card-header"><div class="card-title">System Notes</div></div>
           <div class="activity-list">
-            <div class="activity-item"><div class="act-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg></div><div><div class="act-text">User roles match backend enum</div><div class="act-time">admin, cashier, product_adder</div></div></div>
+            <div class="activity-item"><div class="act-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg></div><div><div class="act-text">User roles match backend enum</div><div class="act-time">admin, cashier</div></div></div>
             <div class="activity-item"><div class="act-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg></div><div><div class="act-text">Bill methods match backend enum</div><div class="act-time">cash, card, digital</div></div></div>
             <div class="activity-item"><div class="act-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg></div><div><div class="act-text">Dashboard uses real backend endpoints</div><div class="act-time">products, bills, users, carts</div></div></div>
           </div>
@@ -939,7 +939,6 @@ async function loadUsers() {
   const roleColor = {
     admin: 'badge-red',
     cashier: 'badge-blue',
-    product_adder: 'badge-amber',
   };
 
   tb.innerHTML = allUsers.map(u => `
@@ -1014,6 +1013,23 @@ async function loadReports() {
 }
 
 function initPage() {
+  if (!window.auth.enforceRole('admin')) {
+    return;
+  }
+
+  const user = window.auth.currentUser();
+  if (user?.name) {
+    document.getElementById('topbar-user').textContent = user.name;
+  }
+
+  const logoutBtn = document.getElementById('logout-btn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      window.auth.logout();
+      window.location.href = 'login.html';
+    });
+  }
+
   document.getElementById('api-base-url').value = window.API_BASE_URL;
   document.getElementById('api-base-pill').textContent = window.API_BASE_URL.replace(/^https?:\/\//, '');
   refreshDashboard();

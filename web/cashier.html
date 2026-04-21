@@ -643,7 +643,10 @@
         <p>Cashier Checkout Interface</p>
       </div>
     </a>
-    <div class="role-pill"><span class="status-dot"></span>Cashier Console</div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <div class="role-pill"><span class="status-dot"></span>Cashier Console</div>
+      <button class="btn btn-success" id="logout-btn" type="button" style="height:36px; padding:0 12px;">Logout</button>
+    </div>
   </header>
 
   <div class="ticker">
@@ -797,6 +800,10 @@
 
   <script src="./public/js/api.js"></script>
   <script>
+    if (!window.auth.enforceRole('cashier')) {
+      throw new Error('Unauthorized');
+    }
+
     let currentCartId = null;
     let currentTotal = 0;
     let currentCartItems = [];
@@ -1005,6 +1012,11 @@
 
     document.getElementById('rfid-input').addEventListener('keyup', (e) => {
       if (e.key === 'Enter') loadCartByRFID();
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      window.auth.logout();
+      window.location.href = 'login.html';
     });
   </script>
 </body>

@@ -378,8 +378,8 @@
       <div class="auth-body">
         <p class="auth-note">Use your assigned credentials to access cashier and administration modules.</p>
         <form id="login-form">
-          <label for="username">Username</label>
-          <input id="username" name="username" autocomplete="username" required>
+          <label for="name">Username</label>
+          <input id="name" name="name" autocomplete="username" required>
           <label for="password">Password</label>
           <input id="password" name="password" type="password" autocomplete="current-password" required>
           <div class="actions">
@@ -400,12 +400,18 @@
 
     form.addEventListener('submit', async e => {
       e.preventDefault();
-      const username = form.username.value.trim();
+      const name = form.name.value.trim();
       const password = form.password.value;
-      const res = await window.auth.loginUser({ username, password });
-      if (!res || !res.ok) return show(res?.error || 'Login failed', false);
+      const res = await window.auth.loginUser({ name, password });
+      if (!res || !res.success) return show(res?.message || 'Login failed', false);
       show('Login successful — redirecting...', true);
-      setTimeout(() => { window.location.href = 'index.html'; }, 700);
+      setTimeout(() => { window.auth.redirectToDashboard(res.user); }, 700);
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.auth.isAuthenticated()) {
+        window.auth.redirectToDashboard();
+      }
     });
   </script>
 </body>

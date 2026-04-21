@@ -234,8 +234,7 @@
       font-family: 'IBM Plex Mono', monospace;
     }
 
-    input,
-    select {
+    input {
       width: 100%;
       padding: 11px 12px;
       border: 1.5px solid var(--border-dark);
@@ -246,8 +245,7 @@
       transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
 
-    input:focus,
-    select:focus {
+    input:focus {
       outline: none;
       border-color: var(--ink);
       box-shadow: 3px 3px 0 var(--border);
@@ -361,11 +359,11 @@
   <div class="ticker">
     <div class="ticker-track">
       <span class="ticker-item hl">REGISTRATION FLOW: ACTIVE</span>
-      <span class="ticker-item">ROLE ASSIGNMENT: REQUIRED</span>
+      <span class="ticker-item">ROLE ASSIGNMENT: AUTOMATED</span>
       <span class="ticker-item hl">STAFF DIRECTORY: ONLINE</span>
       <span class="ticker-item">ACCESS POLICY: ENFORCED</span>
       <span class="ticker-item hl">REGISTRATION FLOW: ACTIVE</span>
-      <span class="ticker-item">ROLE ASSIGNMENT: REQUIRED</span>
+      <span class="ticker-item">ROLE ASSIGNMENT: AUTOMATED</span>
       <span class="ticker-item hl">STAFF DIRECTORY: ONLINE</span>
       <span class="ticker-item">ACCESS POLICY: ENFORCED</span>
     </div>
@@ -378,18 +376,12 @@
         <h1 class="auth-title">Create Account</h1>
       </div>
       <div class="auth-body">
-        <p class="auth-note">Register a staff identity and assign permissions for the NovaMart modules.</p>
+        <p class="auth-note">Register a staff identity for cashier access in the NovaMart modules.</p>
         <form id="register-form">
-          <label for="username">Username</label>
-          <input id="username" name="username" autocomplete="username" required>
+          <label for="name">Username</label>
+          <input id="name" name="name" autocomplete="username" required>
           <label for="password">Password</label>
           <input id="password" name="password" type="password" autocomplete="new-password" required>
-          <label for="role">Role</label>
-          <select id="role" name="role">
-            <option value="staff">Staff</option>
-            <option value="cashier">Cashier</option>
-            <option value="admin">Admin</option>
-          </select>
           <div class="actions">
             <button type="submit" class="btn btn-primary">Register</button>
             <a href="login.html" class="btn btn-outline">Sign In</a>
@@ -408,13 +400,18 @@
 
     form.addEventListener('submit', async e => {
       e.preventDefault();
-      const username = form.username.value.trim();
+      const name = form.name.value.trim();
       const password = form.password.value;
-      const role = form.role.value;
-      const res = await window.auth.registerUser({ username, password, role });
-      if (!res || !res.ok) return show(res?.error || 'Registration failed', false);
+      const res = await window.auth.registerUser({ name, password });
+      if (!res || !res.success) return show(res?.message || 'Registration failed', false);
       show('Registered — you can sign in now', true);
       setTimeout(() => { window.location.href = 'login.html'; }, 900);
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.auth.isAuthenticated()) {
+        window.auth.redirectToDashboard();
+      }
     });
   </script>
 </body>
