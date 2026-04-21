@@ -762,7 +762,7 @@
               <div class="summary-box">
                 <div class="summary-row">
                   <span class="muted">Cart Status</span>
-                  <span>Ready for billing</span>
+                  <span id="cart-status">Ready for billing</span>
                 </div>
                 <div class="summary-row">
                   <span>Amount Due</span>
@@ -799,6 +799,9 @@
   <script>
     let currentCartId = null;
     let currentTotal = 0;
+    let currentCartItems = [];
+    let currentCartStatus = '';
+    let lastBill = null;
 
     function setAlert(message, type = 'info') {
       const el = document.getElementById('alert');
@@ -817,7 +820,17 @@
     }
 
     function dateTime(value) {
+      if (!value) return '—';
       return new Date(value).toLocaleString();
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
     }
 
     async function loadCartByRFID() {
@@ -838,10 +851,14 @@
 
         currentCartId = res.data.cart.id;
         currentTotal = Number(res.data.total || 0);
+        currentCartItems = Array.isArray(res.data.items) ? res.data.items : [];
+        currentCartStatus = res.data.cart.status || 'active';
 
-        renderItems(res.data.items || []);
+        renderItems(currentCartItems);
+
         document.getElementById('total-display').textContent = money(currentTotal);
         document.getElementById('payment-total').textContent = money(currentTotal);
+        document.getElementById('cart-status').textContent = currentCartStatus;
 
         document.getElementById('cart-empty').classList.add('hidden');
         document.getElementById('cart-content').classList.remove('hidden');
@@ -871,12 +888,12 @@
       tbody.innerHTML = items.map(item => `
         <tr>
           <td>
-            <div class="item-name">${item.name}</div>
-            <div class="item-sub">${item.category || 'General item'}</div>
+            <div class="item-name">${escapeHtml(item.name)}</div>
+            <div class="item-sub">${escapeHtml(item.category || 'General item')}</div>
           </td>
           <td>${money(item.price)}</td>
-          <td><span class="qty-badge">${item.quantity}</span></td>
-          <td>${money(item.price * item.quantity)}</td>
+          <td><span class="qty-badge">${Number(item.quantity || 0)}</span></td>
+          <td>${money(Number(item.price || 0) * Number(item.quantity || 0))}</td>
         </tr>
       `).join('');
     }
@@ -890,11 +907,16 @@
       const cashierId = parseInt(document.getElementById('cashier-id').value || '1', 10);
       const paymentMethod = document.getElementById('payment-method').value;
 
+      if (!cashierId || cashierId <= 0) {
+        setAlert('Enter a valid cashier ID.', 'warning');
+        return;
+      }
+
       try {
         const res = await api.post('/checkout', {
-          cart_id: currentCartId,
-          cashier_id: cashierId,
-          payment_method: paymentMethod
+          cartId: currentCartId,
+          cashierId: cashierId,
+          paymentMethod: paymentMethod
         });
 
         if (!res.success) {
@@ -902,30 +924,45 @@
           return;
         }
 
-        const bill = res.data.bill;
-        const items = bill.items || [];
+        const bill = res.data?.bill;
+        if (!bill) {
+          setAlert('Checkout completed, but bill data was not returned.', 'danger');
+          return;
+        }
+
+        lastBill = bill;
 
         document.getElementById('receipt-content').innerHTML = `
           <div class="receipt-box">
             <div class="receipt-head">
               <strong>NovaMart Smart Cart</strong>
-              <span>${dateTime(bill.created_at)}</span>
-              <strong style="margin-top:8px;">${bill.bill_number}</strong>
+              <span>${dateTime(bill.createdAt || bill.created_at)}</span>
+              <strong style="margin-top:8px;">${escapeHtml(bill.billNumber || bill.bill_number || '—')}</strong>
             </div>
             <hr>
-            ${items.map(item => `
+            ${currentCartItems.map(item => `
               <div class="receipt-row">
-                <span>${item.product_name} × ${item.quantity}</span>
-                <span>${money(item.subtotal)}</span>
+                <span>${escapeHtml(item.name)} × ${Number(item.quantity || 0)}</span>
+                <span>${money(Number(item.price || 0) * Number(item.quantity || 0))}</span>
               </div>
             `).join('')}
             <hr>
+            <div class="receipt-row">
+              <span>Cart</span>
+              <span>#${escapeHtml(bill.cartId || bill.cart_id || currentCartId)}</span>
+            </div>
+            <div class="receipt-row">
+              <span>Cashier</span>
+              <span>#${escapeHtml(bill.cashierId || bill.cashier_id || cashierId)}</span>
+            </div>
+            <div class="receipt-row">
+              <span>Payment</span>
+              <span>${escapeHtml(String(bill.paymentMethod || bill.payment_method || paymentMethod).toUpperCase())}</span>
+            </div>
+            <hr>
             <div class="receipt-row" style="font-weight:800;">
               <span>TOTAL</span>
-              <span>${money(bill.total_amount)}</span>
-            </div>
-            <div style="margin-top:12px; text-align:center; color:#6b7280; font-size:0.82rem;">
-              Payment: ${String(bill.payment_method).toUpperCase()}
+              <span>${money(bill.totalAmount || bill.total_amount || currentTotal)}</span>
             </div>
           </div>
         `;
@@ -933,7 +970,7 @@
         document.getElementById('receipt-card').classList.remove('hidden');
         document.getElementById('payment-form').classList.add('hidden');
 
-        setAlert(`Checkout complete. Bill ${bill.bill_number} generated.`, 'success');
+        setAlert(`Checkout complete. Bill ${bill.billNumber || bill.bill_number} generated.`, 'success');
       } catch (err) {
         console.error(err);
         setAlert('Failed to complete checkout.', 'danger');
@@ -947,11 +984,15 @@
     function resetCashier() {
       currentCartId = null;
       currentTotal = 0;
+      currentCartItems = [];
+      currentCartStatus = '';
+      lastBill = null;
 
       document.getElementById('rfid-input').value = '';
       document.getElementById('items-body').innerHTML = '';
       document.getElementById('total-display').textContent = '$0.00';
       document.getElementById('payment-total').textContent = '$0.00';
+      document.getElementById('cart-status').textContent = 'Ready for billing';
 
       document.getElementById('cart-empty').classList.remove('hidden');
       document.getElementById('cart-content').classList.add('hidden');
