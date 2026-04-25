@@ -108,10 +108,30 @@
       letter-spacing: 0.06em;
     }
 
+    .ws-pill {
+      color: #8a2020;
+      background: var(--red-bg);
+      border-color: #efb9b9;
+    }
+
+    .ws-pill.connected {
+      color: var(--green);
+      background: var(--green-bg);
+      border-color: var(--green);
+    }
+
     .status-dot {
       width: 6px;
       height: 6px;
       border-radius: 50%;
+      background: var(--green);
+    }
+
+    .ws-pill .status-dot {
+      background: #8a2020;
+    }
+
+    .ws-pill.connected .status-dot {
       background: var(--green);
     }
 
@@ -645,6 +665,7 @@
     </a>
     <div style="display:flex; align-items:center; gap:8px;">
       <div class="role-pill"><span class="status-dot"></span>Cashier Console</div>
+      <div id="ws-status-pill" class="role-pill ws-pill"><span class="status-dot"></span>Live feed offline</div>
       <button class="btn btn-success" id="logout-btn" type="button" style="height:36px; padding:0 12px;">Logout</button>
     </div>
   </header>
@@ -809,6 +830,9 @@
     let currentCartItems = [];
     let currentCartStatus = '';
     let lastBill = null;
+    let cartSocket = null;
+    let reconnectTimer = null;
+    let reconnectAttempts = 0;
 
     function setAlert(message, type = 'info') {
       const el = document.getElementById('alert');
@@ -840,6 +864,102 @@
         .replace(/'/g, '&#39;');
     }
 
+    function updateSocketStatus(connected, label) {
+      const el = document.getElementById('ws-status-pill');
+      if (!el) return;
+
+      el.classList.toggle('connected', Boolean(connected));
+      el.innerHTML = `<span class="status-dot"></span>${escapeHtml(label)}`;
+    }
+
+    function applyCartPayload(res, source = 'RFID') {
+      currentCartId = res.data.cart.id;
+      currentTotal = Number(res.data.total || 0);
+      currentCartItems = Array.isArray(res.data.items) ? res.data.items : [];
+      currentCartStatus = res.data.cart.status || 'active';
+
+      renderItems(currentCartItems);
+
+      document.getElementById('total-display').textContent = money(currentTotal);
+      document.getElementById('payment-total').textContent = money(currentTotal);
+      document.getElementById('cart-status').textContent = currentCartStatus;
+
+      document.getElementById('cart-empty').classList.add('hidden');
+      document.getElementById('cart-content').classList.remove('hidden');
+      document.getElementById('payment-idle').classList.add('hidden');
+      document.getElementById('payment-form').classList.remove('hidden');
+      document.getElementById('receipt-card').classList.add('hidden');
+
+      const nextMessage = source === 'WS'
+        ? `Live cart update received. Cart #${currentCartId} loaded.`
+        : `Cart #${currentCartId} loaded successfully.`;
+      setAlert(nextMessage, 'success');
+    }
+
+    function getCartSocketUrl() {
+      const base = (window.API_BASE_URL || 'http://localhost:8787/api').replace(/\/$/, '');
+      const wsBase = base.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:');
+      return `${wsBase}/cart/latest`;
+    }
+
+    function scheduleSocketReconnect() {
+      if (reconnectTimer) return;
+
+      const delay = Math.min(10000, 1000 * (2 ** reconnectAttempts));
+      reconnectAttempts += 1;
+      updateSocketStatus(false, `Live feed reconnecting (${Math.ceil(delay / 1000)}s)`);
+
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
+        connectCartSocket();
+      }, delay);
+    }
+
+    function connectCartSocket() {
+      if (cartSocket && (cartSocket.readyState === WebSocket.OPEN || cartSocket.readyState === WebSocket.CONNECTING)) {
+        return;
+      }
+
+      try {
+        updateSocketStatus(false, 'Connecting live feed...');
+        cartSocket = new WebSocket(getCartSocketUrl());
+      } catch (err) {
+        console.error('Failed to initialize cart socket', err);
+        updateSocketStatus(false, 'Live feed unavailable');
+        scheduleSocketReconnect();
+        return;
+      }
+
+      cartSocket.addEventListener('open', () => {
+        reconnectAttempts = 0;
+        updateSocketStatus(true, 'Live feed connected');
+      });
+
+      cartSocket.addEventListener('message', (event) => {
+        try {
+          const res = JSON.parse(event.data);
+          if (!(res?.success && res?.data?.cart && Array.isArray(res?.data?.items))) {
+            return;
+          }
+          applyCartPayload(res, 'WS');
+        } catch (err) {
+          console.warn('Ignoring non-JSON websocket message', err);
+        }
+      });
+
+      cartSocket.addEventListener('close', () => {
+        updateSocketStatus(false, 'Live feed disconnected');
+        scheduleSocketReconnect();
+      });
+
+      cartSocket.addEventListener('error', () => {
+        updateSocketStatus(false, 'Live feed error');
+        if (cartSocket) {
+          cartSocket.close();
+        }
+      });
+    }
+
     async function loadCartByRFID() {
       const rfid = document.getElementById('rfid-input').value.trim();
 
@@ -855,25 +975,7 @@
           setAlert(res.message || 'Unable to load cart.', 'danger');
           return;
         }
-
-        currentCartId = res.data.cart.id;
-        currentTotal = Number(res.data.total || 0);
-        currentCartItems = Array.isArray(res.data.items) ? res.data.items : [];
-        currentCartStatus = res.data.cart.status || 'active';
-
-        renderItems(currentCartItems);
-
-        document.getElementById('total-display').textContent = money(currentTotal);
-        document.getElementById('payment-total').textContent = money(currentTotal);
-        document.getElementById('cart-status').textContent = currentCartStatus;
-
-        document.getElementById('cart-empty').classList.add('hidden');
-        document.getElementById('cart-content').classList.remove('hidden');
-        document.getElementById('payment-idle').classList.add('hidden');
-        document.getElementById('payment-form').classList.remove('hidden');
-        document.getElementById('receipt-card').classList.add('hidden');
-
-        setAlert(`Cart #${currentCartId} loaded successfully.`, 'success');
+        applyCartPayload(res, 'RFID');
       } catch (err) {
         console.error(err);
         setAlert('Failed to connect to the backend.', 'danger');
@@ -1018,6 +1120,19 @@
       window.auth.logout();
       window.location.href = 'login.html';
     });
+
+    window.addEventListener('beforeunload', () => {
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+      }
+
+      if (cartSocket) {
+        cartSocket.close();
+      }
+    });
+
+    connectCartSocket();
   </script>
 </body>
 </html>
