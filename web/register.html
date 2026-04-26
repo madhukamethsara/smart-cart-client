@@ -408,9 +408,14 @@
       setTimeout(() => { window.location.href = 'login.html'; }, 900);
     });
 
-    window.addEventListener('DOMContentLoaded', () => {
-      if (window.auth.isAuthenticated()) {
-        window.auth.redirectToDashboard();
+    window.addEventListener('DOMContentLoaded', async () => {
+      if (!window.auth.isAuthenticated()) {
+        return;
+      }
+
+      const session = await window.auth.validateSession();
+      if (session.authenticated) {
+        window.auth.redirectToDashboard(session.user);
       }
     });
   </script>

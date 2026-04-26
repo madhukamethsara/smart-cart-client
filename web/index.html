@@ -1,14 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NovaMart Smart Cart</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
   <style>
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
@@ -36,12 +42,14 @@
       --radius-sm: 4px;
       --radius: 8px;
       --radius-lg: 16px;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.07);
-      --shadow: 0 4px 20px rgba(0,0,0,0.08);
-      --shadow-lg: 0 12px 48px rgba(0,0,0,0.12);
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.07);
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 12px 48px rgba(0, 0, 0, 0.12);
     }
 
-    html { scroll-behavior: smooth; }
+    html {
+      scroll-behavior: smooth;
+    }
 
     body {
       font-family: 'Syne', sans-serif;
@@ -153,8 +161,15 @@
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.3;
+      }
     }
 
     /* ── TICKER ── */
@@ -180,7 +195,7 @@
       font-size: 0.68rem;
       letter-spacing: 0.1em;
       padding: 0 32px;
-      color: rgba(255,255,255,0.7);
+      color: rgba(255, 255, 255, 0.7);
       display: flex;
       align-items: center;
       gap: 10px;
@@ -188,14 +203,21 @@
 
     .ticker-item::after {
       content: '—';
-      color: rgba(255,255,255,0.25);
+      color: rgba(255, 255, 255, 0.25);
     }
 
-    .ticker-item.hl { color: #ffffff; }
+    .ticker-item.hl {
+      color: #ffffff;
+    }
 
     @keyframes ticker {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
+      0% {
+        transform: translateX(0);
+      }
+
+      100% {
+        transform: translateX(-50%);
+      }
     }
 
     /* ── HERO ── */
@@ -210,7 +232,7 @@
     .hero-grid-bg {
       position: absolute;
       inset: 0;
-      background-image: 
+      background-image:
         linear-gradient(var(--border) 1px, transparent 1px),
         linear-gradient(90deg, var(--border) 1px, transparent 1px);
       background-size: 48px 48px;
@@ -364,7 +386,7 @@
 
     .status-card-header p {
       font-size: 0.68rem;
-      color: rgba(255,255,255,0.45);
+      color: rgba(255, 255, 255, 0.45);
       margin-top: 3px;
       font-family: 'IBM Plex Mono', monospace;
     }
@@ -413,9 +435,17 @@
       letter-spacing: 0.05em;
     }
 
-    .status-value.ok { color: var(--green); }
-    .status-value.warn { color: var(--amber); }
-    .status-value.neutral { color: var(--ink-3); }
+    .status-value.ok {
+      color: var(--green);
+    }
+
+    .status-value.warn {
+      color: var(--amber);
+    }
+
+    .status-value.neutral {
+      color: var(--ink-3);
+    }
 
     .status-indicator {
       width: 5px;
@@ -424,9 +454,17 @@
       flex-shrink: 0;
     }
 
-    .ok .status-indicator { background: var(--green); }
-    .warn .status-indicator { background: var(--amber); }
-    .neutral .status-indicator { background: var(--ink-5); }
+    .ok .status-indicator {
+      background: var(--green);
+    }
+
+    .warn .status-indicator {
+      background: var(--amber);
+    }
+
+    .neutral .status-indicator {
+      background: var(--ink-5);
+    }
 
     .status-card-note {
       padding: 14px 20px;
@@ -581,21 +619,21 @@
     }
 
     .module-card:hover .card-body p {
-      color: rgba(255,255,255,0.55);
+      color: rgba(255, 255, 255, 0.55);
     }
 
     .module-card:hover .tag {
-      border-color: rgba(255,255,255,0.2);
-      color: rgba(255,255,255,0.5);
+      border-color: rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.5);
     }
 
     .module-card:hover .card-icon {
-      background: rgba(255,255,255,0.08);
-      border-color: rgba(255,255,255,0.15);
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.15);
     }
 
     .module-card:hover .card-icon svg {
-      stroke: rgba(255,255,255,0.8);
+      stroke: rgba(255, 255, 255, 0.8);
     }
 
     .module-card:hover .card-arrow {
@@ -729,18 +767,18 @@
       font-weight: 800;
       letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: rgba(255,255,255,0.5);
+      color: rgba(255, 255, 255, 0.5);
     }
 
     .footer-divider {
       width: 1px;
       height: 14px;
-      background: rgba(255,255,255,0.15);
+      background: rgba(255, 255, 255, 0.15);
     }
 
     .footer-note {
       font-size: 0.72rem;
-      color: rgba(255,255,255,0.3);
+      color: rgba(255, 255, 255, 0.3);
       font-family: 'IBM Plex Mono', monospace;
       letter-spacing: 0.04em;
     }
@@ -757,11 +795,11 @@
       gap: 8px;
       padding: 6px 12px;
       border-radius: 2px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.04);
       font-family: 'IBM Plex Mono', monospace;
       font-size: 0.68rem;
-      color: rgba(255,255,255,0.35);
+      color: rgba(255, 255, 255, 0.35);
       letter-spacing: 0.04em;
     }
 
@@ -779,52 +817,111 @@
         grid-template-columns: 1fr;
         gap: 48px;
       }
+
       .cards-grid {
         grid-template-columns: 1fr;
       }
+
       .module-card {
         border-right: none;
         border-bottom: 1.5px solid var(--ink);
       }
+
       .module-card:last-child {
         border-bottom: none;
       }
+
       .metrics-inner {
         grid-template-columns: 1fr;
       }
+
       .metric {
         border-right: none;
         border-bottom: 1.5px solid var(--border-dark);
       }
+
       .metric:last-child {
         border-bottom: none;
       }
     }
 
     @media (max-width: 640px) {
-      .topbar { padding: 0 20px; }
-      .hero, .modules, .footer, .metrics-strip { padding-left: 20px; padding-right: 20px; }
-      .hero h1 { font-size: 2.6rem; }
-      .topbar-right .status-pill:last-child { display: none; }
-      .hero-actions { flex-direction: column; }
-      .btn { width: 100%; justify-content: center; }
-      .footer { flex-direction: column; align-items: flex-start; }
-      .section-header { flex-direction: column; align-items: flex-start; gap: 4px; }
-      .metric { padding: 24px 20px; }
-      .module-card { padding: 28px 20px; }
+      .topbar {
+        padding: 0 20px;
+      }
+
+      .hero,
+      .modules,
+      .footer,
+      .metrics-strip {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      .hero h1 {
+        font-size: 2.6rem;
+      }
+
+      .topbar-right .status-pill:last-child {
+        display: none;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .footer {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+      }
+
+      .metric {
+        padding: 24px 20px;
+      }
+
+      .module-card {
+        padding: 28px 20px;
+      }
     }
 
     /* ── ANIMATIONS ── */
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
-    .hero-inner { animation: fadeUp 0.5s ease both; }
-    .metrics-inner { animation: fadeUp 0.5s 0.1s ease both; }
-    .cards-grid { animation: fadeUp 0.5s 0.18s ease both; }
+    .hero-inner {
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .metrics-inner {
+      animation: fadeUp 0.5s 0.1s ease both;
+    }
+
+    .cards-grid {
+      animation: fadeUp 0.5s 0.18s ease both;
+    }
   </style>
 </head>
+
 <body>
 
   <!-- TOPBAR -->
@@ -832,8 +929,9 @@
     <div class="brand">
       <div class="brand-mark">
         <svg viewBox="0 0 24 24">
-          <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          <circle cx="9" cy="21" r="1" />
+          <circle cx="20" cy="21" r="1" />
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
         </svg>
       </div>
       <div class="brand-text">
@@ -883,15 +981,22 @@
         </div>
         <h1>Built for real checkout desks and <em>live cart</em> operations.</h1>
         <p class="hero-desc">
-          NovaMart Smart Cart connects cart identification, barcode-based item flow, and cashier-side checkout into one unified retail interface. Select a module below to begin billing or manage store administration.
+          NovaMart Smart Cart connects cart identification, barcode-based item flow, and cashier-side checkout into one
+          unified retail interface. Select a module below to begin billing or manage store administration.
         </p>
         <div class="hero-actions">
           <a href="cashier.html" class="btn btn-primary">
-            <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            <svg viewBox="0 0 24 24">
+              <rect x="2" y="5" width="20" height="14" rx="2" />
+              <line x1="2" y1="10" x2="22" y2="10" />
+            </svg>
             Enter Cashier Panel
           </a>
           <a href="admin.html" class="btn btn-outline">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" />
+            </svg>
             Open Admin Console
           </a>
         </div>
@@ -940,7 +1045,8 @@
             </div>
           </div>
           <div class="status-card-note">
-            Entry point for supermarket staff. Provides quick access to billing and administration reflecting the real-time smart cart workflow.
+            Entry point for supermarket staff. Provides quick access to billing and administration reflecting the
+            real-time smart cart workflow.
           </div>
         </div>
       </div>
@@ -988,17 +1094,21 @@
           <div class="card-top">
             <div class="card-icon">
               <svg viewBox="0 0 24 24">
-                <rect x="2" y="5" width="20" height="14" rx="2"/>
-                <line x1="2" y1="10" x2="22" y2="10"/>
+                <rect x="2" y="5" width="20" height="14" rx="2" />
+                <line x1="2" y1="10" x2="22" y2="10" />
               </svg>
             </div>
             <div class="card-arrow">
-              <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              <svg viewBox="0 0 24 24">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
             </div>
           </div>
           <div class="card-body">
             <h3>Cashier Panel</h3>
-            <p>Retrieve active carts, review scanned items, verify totals, and complete the billing process directly from the store counter terminal.</p>
+            <p>Retrieve active carts, review scanned items, verify totals, and complete the billing process directly
+              from the store counter terminal.</p>
           </div>
           <div class="card-tags">
             <span class="tag">Cart Lookup</span>
@@ -1012,18 +1122,22 @@
           <div class="card-top">
             <div class="card-icon">
               <svg viewBox="0 0 24 24">
-                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                <path d="M2 17l10 5 10-5"/>
-                <path d="M2 12l10 5 10-5"/>
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
               </svg>
             </div>
             <div class="card-arrow">
-              <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              <svg viewBox="0 0 24 24">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
             </div>
           </div>
           <div class="card-body">
             <h3>Admin Console</h3>
-            <p>Manage supermarket products, maintain store-side data records, and supervise operational readiness across the entire smart cart platform.</p>
+            <p>Manage supermarket products, maintain store-side data records, and supervise operational readiness across
+              the entire smart cart platform.</p>
           </div>
           <div class="card-tags">
             <span class="tag">Products</span>
@@ -1053,28 +1167,40 @@
 
   <script src="./public/js/api.js"></script>
   <script>
-    (function(){
-      function renderAuth(){
+    (function () {
+      async function renderAuth() {
         const authArea = document.getElementById('auth-area');
         if (!authArea) return;
-        const user = window.auth && window.auth.currentUser ? window.auth.currentUser() : null;
+
+        let user = window.auth && window.auth.currentUser ? window.auth.currentUser() : null;
+        if (user && window.auth && window.auth.validateSession) {
+          const session = await window.auth.validateSession();
+          user = session.authenticated ? session.user : null;
+        }
+
         if (user) {
           authArea.innerHTML = `
             <div class="status-pill" style="display:inline-flex; align-items:center; gap:8px;">
-              <strong style="font-size:0.88rem">${user.username}</strong>
+              <strong style="font-size:0.88rem">${user.name}</strong>
             </div>
             <button id="logoutBtn" class="btn btn-outline" style="font-size:0.8rem; padding:7px 12px; margin-left:8px;">Logout</button>`;
           const btn = document.getElementById('logoutBtn');
-          btn.addEventListener('click', () => { window.auth.logout(); renderAuth(); });
+          btn.addEventListener('click', async () => {
+            window.auth.logout();
+            await renderAuth();
+          });
         } else {
           authArea.innerHTML = `
             <a href="login.html" class="btn btn-outline" style="font-size:0.8rem; padding:7px 12px; margin-left:8px;">Login</a>
             <a href="register.html" class="btn btn-primary" style="font-size:0.8rem; padding:7px 12px; margin-left:6px;">Sign Up</a>`;
         }
       }
-      document.addEventListener('DOMContentLoaded', renderAuth);
+      document.addEventListener('DOMContentLoaded', () => {
+        renderAuth();
+      });
     })();
   </script>
 
 </body>
+
 </html>

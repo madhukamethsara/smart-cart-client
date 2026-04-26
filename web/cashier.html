@@ -821,9 +821,6 @@
 
   <script src="./public/js/api.js"></script>
   <script>
-    if (!window.auth.enforceRole('cashier')) {
-      throw new Error('Unauthorized');
-    }
 
     let currentCartId = null;
     let currentTotal = 0;
@@ -1132,7 +1129,17 @@
       }
     });
 
-    connectCartSocket();
+    async function initPage() {
+      if (!await window.auth.enforceRole('cashier')) {
+        return;
+      }
+
+      connectCartSocket();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initPage();
+    });
   </script>
 </body>
 </html>

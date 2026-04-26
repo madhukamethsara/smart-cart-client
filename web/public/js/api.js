@@ -1,4 +1,5 @@
 // ── Shared API Client ─────────────────────────────────────────────────────────
+// const API_BASE = 'https://iot-smart-cart.damindudhananjitha.workers.dev/api';
 const API_BASE = 'http://localhost:8787/api';
 const SESSION_KEY = 'nm_session';
 
@@ -202,6 +203,43 @@ function isAuthenticated() {
   return Boolean(session?.token && session?.user);
 }
 
+async function validateSession() {
+  const session = getSession();
+
+  if (!session?.token) {
+    clearSession();
+    return {
+      authenticated: false,
+      user: null,
+      message: 'Missing session token',
+    };
+  }
+
+  const res = await api.get('/auth/me');
+
+  if (!res?.success || !res?.data?.user) {
+    clearSession();
+    return {
+      authenticated: false,
+      user: null,
+      message: res?.message || 'Invalid or expired session',
+    };
+  }
+
+  const nextSession = {
+    token: session.token,
+    user: res.data.user,
+  };
+
+  saveSession(nextSession);
+
+  return {
+    authenticated: true,
+    user: nextSession.user,
+    message: res.message || 'Session valid',
+  };
+}
+
 function redirectToDashboard(user = currentUser()) {
   if (!user) {
     window.location.href = 'login.html';
@@ -221,9 +259,11 @@ function redirectToDashboard(user = currentUser()) {
   window.location.href = 'login.html';
 }
 
-function enforceRole(requiredRole) {
-  const user = currentUser();
-  if (!isAuthenticated()) {
+async function enforceRole(requiredRole) {
+  const sessionState = await validateSession();
+  const user = sessionState.user;
+
+  if (!sessionState.authenticated || !user) {
     window.location.href = 'login.html';
     return false;
   }
@@ -259,6 +299,7 @@ window.auth = {
   registerUser,
   loginUser,
   logout,
+  validateSession,
   currentUser,
   getSession,
   isAuthenticated,

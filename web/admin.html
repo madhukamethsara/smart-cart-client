@@ -1012,8 +1012,8 @@ async function loadReports() {
   drawPriceDist('price-dist', allProducts);
 }
 
-function initPage() {
-  if (!window.auth.enforceRole('admin')) {
+async function initPage() {
+  if (!await window.auth.enforceRole('admin')) {
     return;
   }
 
@@ -1035,7 +1035,9 @@ function initPage() {
   refreshDashboard();
 }
 
-window.addEventListener('DOMContentLoaded', initPage);
+window.addEventListener('DOMContentLoaded', () => {
+  initPage();
+});
 </script>
 </body>
 </html>
