@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
@@ -58,14 +59,14 @@ class ApiService {
     );
   }
 
-  static dynamic _decode(http.Response res) {
-    return jsonDecode(res.body);
+  static Uri _wsUri(String path, [Map<String, dynamic>? queryParams]) {
+    final httpUri = _uri(path, queryParams);
+    final wsScheme = httpUri.scheme == 'https' ? 'wss' : 'ws';
+    return httpUri.replace(scheme: wsScheme);
   }
 
-  static double _toDouble(dynamic value) {
-    if (value == null) return 0.0;
-    if (value is num) return value.toDouble();
-    return double.tryParse(value.toString()) ?? 0.0;
+  static dynamic _decode(http.Response res) {
+    return jsonDecode(res.body);
   }
 
   static int _toInt(dynamic value) {
@@ -140,70 +141,120 @@ class ApiService {
     }
   }
 
-  // ── GET CART ITEMS ──────────────────────────────────────────────────────────
-  static Future<List<CartItem>> getCartItems(int cartId) async {
+  static Future<CartLiveSnapshot?> getCartItemsSnapshot(int cartId) async {
     try {
       final uri = _uri('/cart/$cartId/items');
       final res = await http
           .get(uri, headers: _headers)
           .timeout(const Duration(seconds: 8));
 
-      if (res.statusCode != 200) return [];
+      if (res.statusCode != 200) return null;
 
       final data = _decode(res);
-      if (data['success'] != true || data['data'] == null) return [];
+      if (data['success'] != true || data['data'] == null) return null;
 
       final payload = data['data'] as Map<String, dynamic>;
-      final itemsJson = payload['items'] as List<dynamic>?;
+      final normalizedPayload = <String, dynamic>{
+        ...payload,
+        'cartId': payload['cartId'] ?? payload['cart_id'] ?? cartId,
+      };
 
-      if (itemsJson == null) return [];
-
-      return itemsJson
-          .map((item) => CartItem.fromJson(item as Map<String, dynamic>))
-          .toList();
+      return CartLiveSnapshot.fromJson({
+        'message': data['message'],
+        'lcdMessage': data['lcdMessage'],
+        'data': normalizedPayload,
+      });
     } catch (_) {
-      return [];
+      return null;
     }
   }
 
-  // ── GET CART TOTAL ──────────────────────────────────────────────────────────
-  static Future<double> getCartTotal(int cartId) async {
-    try {
-      final uri = _uri('/cart/$cartId/items');
-      final res = await http
-          .get(uri, headers: _headers)
-          .timeout(const Duration(seconds: 8));
+  static Stream<CartLiveSnapshot> watchCartItemsLatest(int cartId) {
+    late StreamController<CartLiveSnapshot> controller;
+    WebSocket? socket;
+    bool disposed = false;
+    int reconnectAttempts = 0;
 
-      if (res.statusCode != 200) return 0.0;
-
-      final data = _decode(res);
-      if (data['success'] != true || data['data'] == null) return 0.0;
-
-      final payload = data['data'] as Map<String, dynamic>;
-      return _toDouble(payload['total']);
-    } catch (_) {
-      return 0.0;
+    Duration reconnectDelay(int attempts) {
+      if (attempts <= 1) return const Duration(seconds: 1);
+      if (attempts == 2) return const Duration(seconds: 2);
+      if (attempts == 3) return const Duration(seconds: 4);
+      return const Duration(seconds: 8);
     }
-  }
 
-  // ── GET CART EXPECTED WEIGHT ────────────────────────────────────────────────
-  static Future<double> getCartExpectedWeight(int cartId) async {
-    try {
-      final uri = _uri('/cart/$cartId/items');
-      final res = await http
-          .get(uri, headers: _headers)
-          .timeout(const Duration(seconds: 8));
+    Future<void> connect() async {
+      if (disposed) return;
 
-      if (res.statusCode != 200) return 0.0;
+      try {
+        final uri = _wsUri('/cart/$cartId/items/latest');
+        socket = await WebSocket.connect(
+          uri.toString(),
+        ).timeout(const Duration(seconds: 8));
 
-      final data = _decode(res);
-      if (data['success'] != true || data['data'] == null) return 0.0;
+        reconnectAttempts = 0;
 
-      final payload = data['data'] as Map<String, dynamic>;
-      return _toDouble(payload['expectedWeight']);
-    } catch (_) {
-      return 0.0;
+        socket!.listen(
+          (event) {
+            try {
+              final raw =
+                  event is String ? event : utf8.decode(event as List<int>);
+              final decoded = jsonDecode(raw);
+
+              if (decoded is! Map<String, dynamic>) return;
+              if (decoded['success'] != true) return;
+
+              final snapshot = CartLiveSnapshot.fromJson(decoded);
+              if (!controller.isClosed) {
+                controller.add(snapshot);
+              }
+            } catch (_) {}
+          },
+          onDone: () async {
+            await socket?.close();
+            socket = null;
+
+            if (disposed) return;
+
+            reconnectAttempts += 1;
+            Future.delayed(reconnectDelay(reconnectAttempts), connect);
+          },
+          onError: (Object error) async {
+            await socket?.close();
+            socket = null;
+
+            if (disposed) return;
+
+            if (!controller.isClosed) {
+              controller.addError(error);
+            }
+
+            reconnectAttempts += 1;
+            Future.delayed(reconnectDelay(reconnectAttempts), connect);
+          },
+          cancelOnError: false,
+        );
+      } catch (error) {
+        if (disposed) return;
+
+        if (!controller.isClosed) {
+          controller.addError(error);
+        }
+
+        reconnectAttempts += 1;
+        Future.delayed(reconnectDelay(reconnectAttempts), connect);
+      }
     }
+
+    controller = StreamController<CartLiveSnapshot>(
+      onListen: connect,
+      onCancel: () async {
+        disposed = true;
+        await socket?.close();
+        socket = null;
+      },
+    );
+
+    return controller.stream;
   }
 
   // ── GET ALL PRODUCTS ────────────────────────────────────────────────────────

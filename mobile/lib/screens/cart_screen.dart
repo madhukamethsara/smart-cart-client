@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -23,6 +25,8 @@ class _CartScreenState extends State<CartScreen>
   bool _refreshing = false;
   bool _loadingData = true;
   Bill? _bill;
+  StreamSubscription<CartLiveSnapshot>? _cartItemsSub;
+  bool _isHydratingFromHttp = false;
 
   List<CartItem> _items = [];
   double _total = 0.0;
@@ -33,16 +37,17 @@ class _CartScreenState extends State<CartScreen>
     super.initState();
     _cart = widget.cart;
     _tabs = TabController(length: 3, vsync: this);
-    _loadCartData();
+    _initializeCartData();
   }
 
   @override
   void dispose() {
+    _cartItemsSub?.cancel();
     _tabs.dispose();
     super.dispose();
   }
 
-  Future<void> _loadCartData() async {
+  Future<void> _initializeCartData() async {
     if (_cart == null) return;
 
     setState(() {
@@ -53,27 +58,62 @@ class _CartScreenState extends State<CartScreen>
       final cartId = _cart!.id;
 
       final results = await Future.wait([
-        ApiService.getCartItems(cartId),
-        ApiService.getCartTotal(cartId),
-        ApiService.getCartExpectedWeight(cartId),
+        ApiService.getCartItemsSnapshot(cartId),
         ApiService.getBillForCart(cartId),
       ]);
 
       if (!mounted) return;
 
+      final snapshot = results[0] as CartLiveSnapshot?;
+      final bill = results[1] as Bill?;
+
       setState(() {
-        _items = results[0] as List<CartItem>;
-        _total = results[1] as double;
-        _expectedWeight = results[2] as double;
-        _bill = results[3] as Bill?;
+        if (snapshot != null) {
+          _items = snapshot.items;
+          _total = snapshot.total;
+          _expectedWeight = snapshot.expectedWeight;
+        }
+        _bill = bill;
         _loadingData = false;
       });
+
+      _bindCartStream(cartId);
     } catch (_) {
       if (!mounted) return;
       setState(() {
         _loadingData = false;
       });
     }
+  }
+
+  void _bindCartStream(int cartId) {
+    _cartItemsSub?.cancel();
+
+    _cartItemsSub = ApiService.watchCartItemsLatest(cartId).listen(
+      (snapshot) {
+        if (!mounted || _isHydratingFromHttp) return;
+
+        final eventMessage = snapshot.message?.trim();
+
+        setState(() {
+          _items = snapshot.items;
+          _total = snapshot.total;
+          _expectedWeight = snapshot.expectedWeight;
+          _loadingData = false;
+        });
+
+        if (eventMessage != null && eventMessage.isNotEmpty) {
+          _showCartEventToast(eventMessage);
+        }
+      },
+      onError: (_) {
+        if (!mounted) return;
+
+        setState(() {
+          _loadingData = false;
+        });
+      },
+    );
   }
 
   Future<void> _refresh() async {
@@ -84,26 +124,139 @@ class _CartScreenState extends State<CartScreen>
     });
 
     try {
-      Cart? updated;
-      final cartCode = _cart!.cartCode;
+      if (!mounted || _cart == null) return;
 
-      updated = await ApiService.getCartByQR(cartCode);
-      updated ??= await ApiService.getCartByRFID(cartCode);
+      _isHydratingFromHttp = true;
+      await _cartItemsSub?.cancel();
+      _cartItemsSub = null;
 
-      if (updated != null && mounted) {
-        setState(() {
-          _cart = updated;
-        });
-      }
+      final cartId = _cart!.id;
+      final results = await Future.wait([
+        ApiService.getCartItemsSnapshot(cartId),
+        ApiService.getBillForCart(cartId),
+      ]);
 
-      await _loadCartData();
+      if (!mounted) return;
+
+      final snapshot = results[0] as CartLiveSnapshot?;
+      final bill = results[1] as Bill?;
+
+      setState(() {
+        if (snapshot != null) {
+          _items = snapshot.items;
+          _total = snapshot.total;
+          _expectedWeight = snapshot.expectedWeight;
+        }
+        _bill = bill;
+      });
+
+      _bindCartStream(cartId);
     } finally {
+      _isHydratingFromHttp = false;
+
       if (mounted) {
         setState(() {
           _refreshing = false;
         });
       }
     }
+  }
+
+  void _showCartEventToast(String message) {
+    final tone = _resolveToastTone(message);
+    if (tone == null || !mounted) return;
+
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) return;
+
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+        padding: EdgeInsets.zero,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        duration: const Duration(seconds: 2),
+        content: Container(
+          decoration: BoxDecoration(
+            color: tone.bg,
+            border: Border.fromBorderSide(
+              BorderSide(color: tone.border, width: 1.5),
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
+            children: [
+              Icon(tone.icon, size: 16, color: tone.accent),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      tone.label,
+                      style: GoogleFonts.ibmPlexMono(
+                        fontSize: 9,
+                        color: tone.accent,
+                        letterSpacing: 1.0,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      message,
+                      style: GoogleFonts.syne(
+                        fontSize: 12,
+                        color: NovaMartTheme.ink,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  _CartToastTone? _resolveToastTone(String message) {
+    final text = message.toLowerCase();
+
+    if (text.contains('deleted')) {
+      return const _CartToastTone(
+        label: 'DELETED',
+        bg: NovaMartTheme.redBg,
+        accent: NovaMartTheme.red,
+        border: Color(0xFFFCA5A5),
+        icon: Icons.delete_outline,
+      );
+    }
+
+    if (text.contains('removed')) {
+      return const _CartToastTone(
+        label: 'REMOVED',
+        bg: NovaMartTheme.amberBg,
+        accent: NovaMartTheme.amber,
+        border: Color(0xFFFCD34D),
+        icon: Icons.remove_circle_outline,
+      );
+    }
+
+    if (text.contains('added')) {
+      return const _CartToastTone(
+        label: 'ADDED',
+        bg: NovaMartTheme.greenBg,
+        accent: NovaMartTheme.green,
+        border: Color(0xFFB6D9BF),
+        icon: Icons.add_circle_outline,
+      );
+    }
+
+    return null;
   }
 
   int get _itemCount {
@@ -423,6 +576,22 @@ class _CartScreenState extends State<CartScreen>
       ),
     );
   }
+}
+
+class _CartToastTone {
+  final String label;
+  final Color bg;
+  final Color accent;
+  final Color border;
+  final IconData icon;
+
+  const _CartToastTone({
+    required this.label,
+    required this.bg,
+    required this.accent,
+    required this.border,
+    required this.icon,
+  });
 }
 
 // ── ITEMS TAB ──
@@ -745,7 +914,6 @@ class _SummaryTab extends StatelessWidget {
             ],
           ),
         ),
-
         if (bill != null)
           Container(
             margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -785,10 +953,8 @@ class _SummaryTab extends StatelessWidget {
               ],
             ),
           ),
-
         const SectionHeader(eyebrow: 'Breakdown', title: 'Order Summary'),
         const SizedBox(height: 8),
-
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 16),
           decoration: const BoxDecoration(
@@ -841,10 +1007,8 @@ class _SummaryTab extends StatelessWidget {
             ],
           ),
         ),
-
         const SectionHeader(eyebrow: 'Analytics', title: 'By Category'),
         const SizedBox(height: 8),
-
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 16),
           decoration: const BoxDecoration(
@@ -1050,7 +1214,6 @@ class _DetailsTab extends StatelessWidget {
             ],
           ),
         ),
-
         const SectionHeader(eyebrow: 'Store', title: 'Store Info'),
         const SizedBox(height: 8),
         Container(
@@ -1081,8 +1244,18 @@ class _DetailsTab extends StatelessWidget {
   }
 
   static const _months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec'
   ];
 }
 
