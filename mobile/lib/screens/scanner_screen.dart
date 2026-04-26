@@ -87,7 +87,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
         _loading = false;
       });
 
-      await Navigator.push(
+      await Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (_) => CartScreen(cart: cart!),
@@ -214,14 +214,11 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   controller: _ctrl,
                   onDetect: _onDetect,
                 ),
-
                 CustomPaint(
                   size: MediaQuery.of(context).size,
                   painter: _ScanOverlayPainter(),
                 ),
-
                 const _ScanFrame(),
-
                 Positioned(
                   bottom: 120,
                   left: 0,
@@ -272,7 +269,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
                     ],
                   ),
                 ),
-
                 Positioned(
                   bottom: 48,
                   left: 0,
@@ -514,3 +510,4 @@ class _CornerPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
+
